@@ -10,7 +10,7 @@
 #include "RPU_Config.h"
 #include "RPU.h"
 #include "DropTargets.h"
-#include "ExampleMachineMEGA.h"
+#include "DollyParton.h"
 #include "OperatorMenus.h"
 #include "AudioHandler.h"
 #include "DisplayHandler.h"
