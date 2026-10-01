@@ -1,18 +1,20 @@
 # ExampleMachine  
   
-This version of ExampleMachine requires RPU board Rev 3 or greater.  
-Rev 1 & 2 (build with Arduino Nano) don't have the code space required.  
-  
-Generic early solid state pinball implementation (will run on -17, -35, 100, 200, Sys 4, 6, 7, or 11 platform)  
+Reworking the rules for Bally Dolly Parton pinball machine
 
-## How to use this
-1) Get the Arduino IDE
-2) Get this ZIP
-3) Unpack this ZIP to a folder called ExampleMachineMEGA
-4) Open ExampleMachineMEGA.ino
+Ideas:
+Base game: background song, more mellow than the mode songs. scoring basically as original game. first drop lights spinner.increase score for spinner and maybe double the count? call outs, all the callouts...
 
-## Sound files
-[Sound file ZIP](https://drive.google.com/file/d/1lXaLpyJ7MR6NXaG32L5Z4EdiXXQQEJUx/view?usp=sharing)
+Completing "DOLLY" targets lights "D" on playfield and each additional time you get 1 more letter to complete lower DOLLY. holds over for game
 
-## Lamp animations
-You can generate lamp animations with a tool [here](https://www.pinballrefresh.com/animation-generator)
+Top scaucer lights scoll "PARTON" landing in scaucer lights the letter for lower PARTON. holds over for game
+
+Spinner count mode, complete for score frenzy or something
+
+Song based modes: target behind drop targets select mode, different song plays for every mode. during mode hitting specific shots is more valuable. Targets, Spinner, Pops, scaucer. need to figure out what "complete" is for each mode. complete bonun available at bottom right shot.
+
+Complete everything for wizard?
+
+There are some not used lights availbe on the light matrix so maybe the complete mode needs a light? and the lower left "change mode" needs one.
+
+See if its possible to light just individual segments on the led displays to spell "5on9 1, 2, 3, 4, ..."
