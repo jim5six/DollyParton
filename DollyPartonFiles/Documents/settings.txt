@@ -1,0 +1,595 @@
+{
+  "lampDefs": "#define LAMP_D_TARGET                 0\t// Q14, J1-18\n#define LAMP_O_TARGET                 1\t// Q29, J1-1\n#define LAMP_1ST_L_TARGET             2\t// Q36, J3-26\n#define LAMP_2ND_L_TARGET             3\t// Q57, J3-1\n#define LAMP_Y_TARGET                 4\t// Q12, J1-19\n#define LAMP_P_SAUCER                 5\t// Q27, J1-9\n#define LAMP_A_SAUCER                 6\t// Q38, J3-25\n#define LAMP_R_SAUCER                 7\t// Q50, J3-12\n#define LAMP_T_SAUCER                 8\t// Q13, J1-17\n#define LAMP_O_SAUCER                 9\t// Q28, J1-8\n#define LAMP_N_SAUCER                 10\t// Q44, J3-19\n#define LAMP_5K_PARTON_SAUCER         13\t// Q35, J1-3\n#define LAMP_1K_DOLLY_TARGET          14\t// Q49, J3-17\n#define LAMP_SPINNER_1K               15\t// Q54, J3-11\n#define LAMP_20K_DROP_TARGET          16\t// Q9, J1-14\n#define LAMP_22K_BONUS                17\t// Q34, J1-2\n#define LAMP_44K_BONUS                18\t// Q48, J3-16\n#define LAMP_SPECIAL_DOLLY_PARTON     19\t// Q55, J3-9\n#define LAMP_R_OUTLANE                20\t// Q10, J1-15\n#define LAMP_R_INLANE                 21\t// Q22, J1-10\n#define LAMP_L_INLANE                 22\t// Q37, J3-23\n#define LAMP_L_OUTLANE                23\t// Q60, J3-3\n#define LAMP_D_CENTER                 24\t// Q11, J1-16\n#define LAMP_DOLLY_0_CENTER           25\t// Q26, J1-7\n#define LAMP_1ST_L_CENTER             26\t// Q32, J3-27\n#define LAMP_2ND_L_CENTER             27\t// Q59, J3-4\n#define LAMP_Y_CENTER                 28\t// Q4, J1-28\n#define LAMP_P_CENTER                 29\t// Q25, J1-6\n#define LAMP_A_CENTER                 30\t// Q20, J1-13\n#define LAMP_R_CENTER                 31\t// Q58, J3-2\n#define LAMP_T_CENTER                 32\t// Q1, J1-24\n#define LAMP_PARTON_0_CENTER          33\t// Q24, J1-5\n#define LAMP_N_CENTER                 34\t// Q42, J3-21\n#define LAMP_2X_BONUS                 36\t// Q2, J1-25\n#define LAMP_EB_DROP_TARGET           38\t// Q41, J3-20\n#define LAMP_SPECIAL_DROP_TARGET      39\t// Q46, J3-18\n#define LAMP_SHOOT_AGAIN              40\t// Q3, J2-21\n#define LAMP_MATCH                    41\t// Q23, J2-8\n#define LAMP_SHOOT_AGAIN              42\t// Q40, J2-9\n#define LAMP_CREDIT_LIGHT             43\t// Q52, J2-5\n#define LAMP_2X_BONUS                 44\t// Q7, J2-13\n#define LAMP_3X_BONUS                 45\t// Q21, J2-12\n#define LAMP_5X_BONUS                 46\t// Q39, J2-4\n#define LAMP_BALL_IN_PLAY             48\t// Q16, J2-22\n#define LAMP_HSTD                     49\t// Q15, J2-23\n#define LAMP_GANE_OVER                50\t// Q33, J2-11\n#define LAMP_TILT                     51\t// Q47, J2-10\n#define LAMP_CREDIT                   52\t// Q5, J2-16\n",
+  "lamps": [
+    {
+      "id": 0,
+      "x": 110,
+      "y": 431,
+      "color": "white",
+      "size": "small"
+    },
+    {
+      "id": 1,
+      "x": 143,
+      "y": 391,
+      "color": "white",
+      "size": "small"
+    },
+    {
+      "id": 2,
+      "x": 176,
+      "y": 351,
+      "color": "white",
+      "size": "small"
+    },
+    {
+      "id": 3,
+      "x": 208,
+      "y": 313,
+      "color": "white",
+      "size": "small"
+    },
+    {
+      "id": 4,
+      "x": 241,
+      "y": 273,
+      "color": "white",
+      "size": "small"
+    },
+    {
+      "id": 5,
+      "x": 242,
+      "y": 140,
+      "color": "white",
+      "size": "medium"
+    },
+    {
+      "id": 6,
+      "x": 287,
+      "y": 116,
+      "color": "white",
+      "size": "medium"
+    },
+    {
+      "id": 7,
+      "x": 335,
+      "y": 102,
+      "color": "white",
+      "size": "medium"
+    },
+    {
+      "id": 8,
+      "x": 387,
+      "y": 104,
+      "color": "white",
+      "size": "medium"
+    },
+    {
+      "id": 9,
+      "x": 436,
+      "y": 117,
+      "color": "white",
+      "size": "medium"
+    },
+    {
+      "id": 10,
+      "x": 480,
+      "y": 142,
+      "color": "white",
+      "size": "medium"
+    },
+    {
+      "id": 13,
+      "x": 361,
+      "y": 289,
+      "color": "white",
+      "size": "medium"
+    },
+    {
+      "id": 14,
+      "x": 218,
+      "y": 387,
+      "color": "white",
+      "size": "medium"
+    },
+    {
+      "id": 15,
+      "x": 619,
+      "y": 706,
+      "color": "white",
+      "size": "large"
+    },
+    {
+      "id": 16,
+      "x": 484,
+      "y": 760,
+      "color": "white",
+      "size": "small"
+    },
+    {
+      "id": 17,
+      "x": 315,
+      "y": 970,
+      "color": "yellow",
+      "size": "large"
+    },
+    {
+      "id": 18,
+      "x": 408,
+      "y": 971,
+      "color": "yellow",
+      "size": "large"
+    },
+    {
+      "id": 19,
+      "x": 362,
+      "y": 927,
+      "color": "red",
+      "size": "large"
+    },
+    {
+      "id": 20,
+      "x": 686,
+      "y": 1101,
+      "color": "red",
+      "size": "medium"
+    },
+    {
+      "id": 21,
+      "x": 628,
+      "y": 1102,
+      "color": "white",
+      "size": "medium"
+    },
+    {
+      "id": 22,
+      "x": 92,
+      "y": 1101,
+      "color": "white",
+      "size": "medium"
+    },
+    {
+      "id": 23,
+      "x": 37,
+      "y": 1101,
+      "color": "red",
+      "size": "medium"
+    },
+    {
+      "id": 24,
+      "x": 250,
+      "y": 857,
+      "color": "white",
+      "size": "large"
+    },
+    {
+      "id": 25,
+      "x": 301,
+      "y": 822,
+      "color": "white",
+      "size": "large"
+    },
+    {
+      "id": 26,
+      "x": 361,
+      "y": 809,
+      "color": "white",
+      "size": "large"
+    },
+    {
+      "id": 27,
+      "x": 420,
+      "y": 823,
+      "color": "white",
+      "size": "large"
+    },
+    {
+      "id": 28,
+      "x": 475,
+      "y": 856,
+      "color": "white",
+      "size": "large"
+    },
+    {
+      "id": 29,
+      "x": 259,
+      "y": 946,
+      "color": "white",
+      "size": "large"
+    },
+    {
+      "id": 30,
+      "x": 287,
+      "y": 899,
+      "color": "white",
+      "size": "large"
+    },
+    {
+      "id": 31,
+      "x": 334,
+      "y": 871,
+      "color": "white",
+      "size": "large"
+    },
+    {
+      "id": 32,
+      "x": 388,
+      "y": 872,
+      "color": "white",
+      "size": "large"
+    },
+    {
+      "id": 33,
+      "x": 434,
+      "y": 898,
+      "color": "white",
+      "size": "large"
+    },
+    {
+      "id": 34,
+      "x": 463,
+      "y": 944,
+      "color": "white",
+      "size": "large"
+    },
+    {
+      "id": 36,
+      "x": 308,
+      "y": 1064,
+      "color": "orange",
+      "size": "large"
+    },
+    {
+      "id": 38,
+      "x": 444,
+      "y": 715,
+      "color": "yellow",
+      "size": "medium"
+    },
+    {
+      "id": 39,
+      "x": 540,
+      "y": 740,
+      "color": "red",
+      "size": "medium"
+    },
+    {
+      "id": 40,
+      "x": 363,
+      "y": 1317,
+      "color": "yellow",
+      "size": "large"
+    },
+    {
+      "id": 41,
+      "x": 0,
+      "y": 0,
+      "color": "yellow",
+      "size": "large"
+    },
+    {
+      "id": 42,
+      "x": 0,
+      "y": 0,
+      "color": "yellow",
+      "size": "medium"
+    },
+    {
+      "id": 43,
+      "x": 129,
+      "y": 1499,
+      "color": "white",
+      "size": "small"
+    },
+    {
+      "id": 44,
+      "x": 0,
+      "y": 0,
+      "color": "white",
+      "size": "small"
+    },
+    {
+      "id": 45,
+      "x": 362,
+      "y": 1079,
+      "color": "yellow",
+      "size": "xl"
+    },
+    {
+      "id": 46,
+      "x": 415,
+      "y": 1064,
+      "color": "white",
+      "size": "xl"
+    },
+    {
+      "id": 48,
+      "x": 0,
+      "y": 0,
+      "color": "yellow",
+      "size": "medium"
+    },
+    {
+      "id": 49,
+      "x": 0,
+      "y": 0,
+      "color": "yellow",
+      "size": "medium"
+    },
+    {
+      "id": 50,
+      "x": 0,
+      "y": 0,
+      "color": "yellow",
+      "size": "medium"
+    },
+    {
+      "id": 51,
+      "x": 0,
+      "y": 0,
+      "color": "yellow",
+      "size": "medium"
+    },
+    {
+      "id": 52,
+      "x": 0,
+      "y": 0,
+      "color": "yellow",
+      "size": "medium"
+    }
+  ],
+  "config": {
+    "steps": "24",
+    "center": {
+      "x": 363,
+      "y": 1081
+    }
+  },
+  "animations": [
+    {
+      "name": "Side to Side (Ping Pong) 1",
+      "frames": [
+        [
+          0,
+          0,
+          192,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          192,
+          0,
+          0,
+          8,
+          0,
+          0
+        ],
+        [
+          63,
+          64,
+          64,
+          0,
+          0,
+          8,
+          0,
+          0
+        ],
+        [
+          126,
+          64,
+          2,
+          99,
+          16,
+          8,
+          0,
+          0
+        ],
+        [
+          248,
+          97,
+          10,
+          231,
+          17,
+          33,
+          0,
+          0
+        ],
+        [
+          192,
+          35,
+          14,
+          206,
+          87,
+          97,
+          0,
+          0
+        ],
+        [
+          128,
+          39,
+          13,
+          28,
+          71,
+          97,
+          0,
+          0
+        ],
+        [
+          0,
+          6,
+          5,
+          24,
+          198,
+          64,
+          0,
+          0
+        ],
+        [
+          0,
+          128,
+          33,
+          0,
+          128,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          128,
+          48,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          48,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          48,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          128,
+          48,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          128,
+          33,
+          0,
+          128,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          6,
+          5,
+          24,
+          198,
+          64,
+          0,
+          0
+        ],
+        [
+          128,
+          39,
+          13,
+          28,
+          71,
+          97,
+          0,
+          0
+        ],
+        [
+          192,
+          35,
+          14,
+          206,
+          87,
+          97,
+          0,
+          0
+        ],
+        [
+          248,
+          97,
+          10,
+          231,
+          17,
+          33,
+          0,
+          0
+        ],
+        [
+          126,
+          64,
+          2,
+          99,
+          16,
+          8,
+          0,
+          0
+        ],
+        [
+          63,
+          64,
+          64,
+          0,
+          0,
+          8,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          192,
+          0,
+          0,
+          8,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          192,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
+    }
+  ]
+}
