@@ -34,7 +34,7 @@
 // Hardware Rev 101 - first RPU CPU interposer release board
 // Hardware Rev 102 - second RPU (with display and WIFI socket)
 // Hardware Rev 200 - RPU on System Alpha
-#define RPU_OS_HARDWARE_REV   3
+#define RPU_OS_HARDWARE_REV   102
 
 // Available Architectures (0-9 is for B/S Boards, 10-19 is for W)
 //  RPU_MPU_ARCHITECTURE 1 = -17, -35, 100, 200, or compatible
@@ -61,8 +61,8 @@
 #define RPU_OS_USE_WAV_TRIGGER_1p3
 //#define RPU_OS_DISABLE_CPC_FOR_SPACE
 //#define RPU_OS_USE_AUX_LAMPS
-//#define RPU_OS_USE_7_DIGIT_DISPLAYS
-//#define RPU_OS_USE_6_DIGIT_CREDIT_DISPLAY_WITH_7_DIGIT_DISPLAYS
+#define RPU_OS_USE_7_DIGIT_DISPLAYS
+#define RPU_OS_USE_6_DIGIT_CREDIT_DISPLAY_WITH_7_DIGIT_DISPLAYS
 //#define RPU_USE_EXTENDED_SWITCHES_ON_PB4
 //#define RPU_USE_EXTENDED_SWITCHES_ON_PB7
 //#define RPU_OS_USE_WTYPE_1_SOUND
@@ -106,7 +106,7 @@
 //  40            381 Hz
 //  35            434 Hz     (This would probably be good for 7-digit displays)
 //  34            446.4 Hz      
-#define RPU_OS_SOFTWARE_DISPLAY_INTERRUPT_INTERVAL  45  
+#define RPU_OS_SOFTWARE_DISPLAY_INTERRUPT_INTERVAL  35  
 //#define RPU_OS_ADJUSTABLE_DISPLAY_INTERRUPT
 
 #ifdef RPU_OS_USE_6_DIGIT_CREDIT_DISPLAY_WITH_7_DIGIT_DISPLAYS
