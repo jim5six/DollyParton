@@ -306,10 +306,9 @@ unsigned long LastTimeSaucerSeen;
 // CUSTOMIZATION TODO:
 // If your game has drop targets, set up objects here. Be sure to
 // check out the types of target banks supported in DropTargtes.h
-DropTargetBank LeftDropTargets(3, 1, DROP_TARGET_TYPE_BLY_1, DROP_TARGET_RESET_STRENGTH);
-DropTargetBank RightDropTargets(3, 1, DROP_TARGET_TYPE_BLY_1, DROP_TARGET_RESET_STRENGTH);
+DropTargetBank DropTargets(4, 1, DROP_TARGET_TYPE_BLY_1, DROP_TARGET_RESET_STRENGTH);
 
-byte PlayerUpLamps[4] = {LAMP_HEAD_PLAYER_1_UP, LAMP_HEAD_PLAYER_2_UP, LAMP_HEAD_PLAYER_3_UP, LAMP_HEAD_PLAYER_4_UP};
+//byte PlayerUpLamps[4] = {LAMP_HEAD_PLAYER_1_UP, LAMP_HEAD_PLAYER_2_UP, LAMP_HEAD_PLAYER_3_UP, LAMP_HEAD_PLAYER_4_UP};
 
 
 /******************************************************
@@ -564,16 +563,14 @@ unsigned short SolenoidConvertDisplayNumberToIndex(byte displayNumber) {
     case  1: return OPERATOR_MENU_VALUE_UNUSED;
     case  2: return OPERATOR_MENU_VALUE_UNUSED;
     case  3: return OPERATOR_MENU_VALUE_UNUSED;
-    case  4: return SOL_POP_BUMPER;
-    case  5: return SOL_DROP_BANK_R_RESET;
-    case  6: return SOL_DROP_BANK_L_RESET;
+    case  5: return SOL_DROP_BANK_RESET;
     case  7: return SOL_KNOCKER;
     case  8: return SOL_SAUCER;
     case  9: return SOL_LEFT_SLING;
     case 10: return SOL_RIGHT_SLING;
     case 11: return OPERATOR_MENU_VALUE_UNUSED;
     case 12: return OPERATOR_MENU_VALUE_UNUSED;
-    case 13: return SOL_SERVE_BALL;
+    case 13: return SOL_BALL_TROUGH;
     case 14: return OPERATOR_MENU_VALUE_UNUSED;
     case 15: return 0x4000; // Flipper Mute
     case 16: return OPERATOR_MENU_VALUE_UNUSED;
@@ -584,9 +581,9 @@ unsigned short SolenoidConvertDisplayNumberToIndex(byte displayNumber) {
   }
 }
 
-// CUSTOMIZATION TODO:
-// In the operator menu's test mode, these are the strengths
-// that will be used 
+//CUSTOMIZATION TODO:
+//In the operator menu's test mode, these are the strengths
+//that will be used 
 byte SolenoidConvertDisplayNumberToTestStrength(byte displayNumber) {
   switch (displayNumber) {
     case  0: return OPERATOR_MENU_VALUE_UNUSED;
@@ -733,15 +730,12 @@ void setup() {
   // If your game has drop targets, this is a good place
   // to configure the drop target switches and solenoids
   // Initialize any drop target variables here
-  LeftDropTargets.DefineSwitch(0, SW_DROP_L_1);
-  LeftDropTargets.DefineSwitch(1, SW_DROP_L_2);
-  LeftDropTargets.DefineSwitch(2, SW_DROP_L_3);
-  LeftDropTargets.DefineResetSolenoid(0, SOL_DROP_BANK_L_RESET);
-  RightDropTargets.DefineSwitch(0, SW_DROP_R_1);
-  RightDropTargets.DefineSwitch(1, SW_DROP_R_2);
-  RightDropTargets.DefineSwitch(2, SW_DROP_R_3);
-  RightDropTargets.DefineResetSolenoid(0, SOL_DROP_BANK_R_RESET);
-
+  DropTargets.DefineSwitch(0, SW_DROP_1);
+  DropTargets.DefineSwitch(1, SW_DROP_2);
+  DropTargets.DefineSwitch(2, SW_DROP_3);
+  DropTargets.DefineSwitch(3, SW_DROP_4);
+  DropTargets.DefineResetSolenoid(0, SOL_DROP_BANK_RESET);
+  
   CurrentTime = millis();
 
   // CUSTOMIZATION TODO:
@@ -818,24 +812,23 @@ void SetGeneralIlluminationOn(boolean setGIOn = true) {
   (void)setGIOn;
 }
 
-void ShowPlayerLamps() {  
-  for (byte count = 0; count < 4; count++) {
-    if (count==CurrentPlayer) RPU_SetLampState(PlayerUpLamps[count], 1, 0, 250);
-    else if (count<CurrentNumPlayers) RPU_SetLampState(PlayerUpLamps[count], 1);
-    else RPU_SetLampState(PlayerUpLamps[count], 0);
-  }  
-}
+// void ShowPlayerLamps() {  
+//   for (byte count = 0; count < 4; count++) {
+//     if (count==CurrentPlayer) RPU_SetLampState(PlayerUpLamps[count], 1, 0, 250);
+//     else if (count<CurrentNumPlayers) RPU_SetLampState(PlayerUpLamps[count], 1);
+//     else RPU_SetLampState(PlayerUpLamps[count], 0);
+//   }  
+// }
 
-byte BonusLampAssignments[11] = { LAMP_BONUS_1K, LAMP_BONUS_2K, LAMP_BONUS_3K, LAMP_BONUS_4K, LAMP_BONUS_5K, LAMP_BONUS_6K, 
-                                  LAMP_BONUS_7K, LAMP_BONUS_8K, LAMP_BONUS_9K, LAMP_BONUS_10K, LAMP_BONUS_20K};
+byte BonusLampAssignments[11] = { LAMP_22K_BONUS, LAMP_44K_BONUS};
 
 void ShowBonusLamps() {
   if (GameMode == GAME_MODE_SKILL_SHOT) {
     byte bonusPhase = (CurrentTime/100)%11;
     for (byte count=0; count<11; count++) RPU_SetLampState(BonusLampAssignments[count], count==bonusPhase);
   } else {
-    RPU_SetLampState(LAMP_BONUS_20K, Bonus[CurrentPlayer]>=20);
-    RPU_SetLampState(LAMP_BONUS_10K, Bonus[CurrentPlayer]>=10 && Bonus[CurrentPlayer]<20);
+    RPU_SetLampState(LAMP_22K_BONUS, Bonus[CurrentPlayer]>=20);
+    RPU_SetLampState(LAMP_44K_BONUS, Bonus[CurrentPlayer]>=10 && Bonus[CurrentPlayer]<20);
     for (byte count=1; count<10; count++) {
       RPU_SetLampState(BonusLampAssignments[count-1], (Bonus[CurrentPlayer]%10)==count);
     }
@@ -878,11 +871,11 @@ boolean AddPlayer(boolean resetNumPlayers = false) {
     QueueNotification(SOUND_EFFECT_VP_ADD_PLAYER_1 + (CurrentNumPlayers - 1), 10);
   }
 
-  for (byte count = 0; count < 4; count++) {
-    if (count==CurrentPlayer) RPU_SetLampState(PlayerUpLamps[count], 1, 0, 250);
-    else if (count<CurrentNumPlayers) RPU_SetLampState(PlayerUpLamps[count], 1);
-    else RPU_SetLampState(PlayerUpLamps[count], 0);
-  }
+  // for (byte count = 0; count < 4; count++) {
+  //   if (count==CurrentPlayer) RPU_SetLampState(PlayerUpLamps[count], 1, 0, 250);
+  //   else if (count<CurrentNumPlayers) RPU_SetLampState(PlayerUpLamps[count], 1);
+  //   else RPU_SetLampState(PlayerUpLamps[count], 0);
+  // }
 
   if (!FreePlayMode) {
     Credits -= 1;
@@ -1147,7 +1140,7 @@ void RunOperatorMenu() {
     if (CountBallsInTrough()) {
       if (CurrentTime > (LastTimeBallServed+1500)) {
         LastTimeBallServed = CurrentTime;
-        RPU_PushToSolenoidStack(SOL_SERVE_BALL, BallServeSolenoidStrength, true);
+        RPU_PushToSolenoidStack(SOL_BALL_TROUGH, BallServeSolenoidStrength, true);
       }
     }
   } else {
@@ -1774,7 +1767,7 @@ int RunAttractMode(int curState, boolean curStateChanged) {
     }
     AttractLastHeadMode = 1;
     Display_UpdateDisplays(0xFF);
-    RPU_SetLampState(LAMP_HEAD_HIGH_SCORE, 0);
+    RPU_SetLampState(LAMP_HSTD, 0);
   } else if ((CurrentTime / 8000) % 2 == 0) {
 
     if (AttractLastHeadMode != 2) {
@@ -1782,10 +1775,10 @@ int RunAttractMode(int curState, boolean curStateChanged) {
     }
     AttractLastHeadMode = 2;
     Display_UpdateDisplays(0xFF, false, false, false, HighScore);
-    RPU_SetLampState(LAMP_HEAD_HIGH_SCORE, 1);
-    for (byte count=0; count<4; count++) {
-      RPU_SetLampState(PlayerUpLamps[count], 0);
-    }
+    RPU_SetLampState(LAMP_HSTD, 1);
+    // for (byte count=0; count<4; count++) {
+    //   RPU_SetLampState(PlayerUpLamps[count], 0);
+    //}
   } else {
     if (AttractLastHeadMode != 3) {
       if (CurrentTime < 32000) {
@@ -1797,7 +1790,7 @@ int RunAttractMode(int curState, boolean curStateChanged) {
       Display_SetLastTimeScoreChanged(CurrentTime);
     }
 
-    RPU_SetLampState(LAMP_HEAD_HIGH_SCORE, 0);
+    RPU_SetLampState(LAMP_HSTD, 0);
     for (byte count=0; count<4; count++) {
       if (count<CurrentNumPlayers) Display_UpdateDisplays(count, false, false, false, CurrentScores[count]);
       else if (CurrentNumPlayers==0) Display_UpdateDisplays(count, false, false, false, 0);
@@ -1810,34 +1803,34 @@ int RunAttractMode(int curState, boolean curStateChanged) {
 
   ShowLampAnimation(attractPlayfieldPhase % 3, 20, CurrentTime, 18, false, false);
 
-  byte switchHit;
-  while ( (switchHit = RPU_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY ) {
-    if (switchHit == SW_CREDIT_RESET) {
-      if (AddPlayer(true)) returnState = MACHINE_STATE_INIT_GAMEPLAY;
-    }
-    if (switchHit == SW_COIN_1 || switchHit == SW_COIN_2 || switchHit == SW_COIN_3 ) {
-      AddCoinToAudit(SwitchToChuteNum(switchHit));
-      AddCoin(SwitchToChuteNum(switchHit));
-    }
-    if (switchHit == SW_SELF_TEST_SWITCH) {
-      Menus.EnterOperatorMenu();
-    }
-  }
+  // byte switchHit;
+  // while ( (switchHit = RPU_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY ) {
+  //   if (switchHit == SW_CREDIT_RESET) {
+  //     if (AddPlayer(true)) returnState = MACHINE_STATE_INIT_GAMEPLAY;
+  //   }
+  //   if (switchHit == SW_COIN_1 || switchHit == SW_COIN_2 || switchHit == SW_COIN_3 ) {
+  //     AddCoinToAudit(SwitchToChuteNum(switchHit));
+  //     AddCoin(SwitchToChuteNum(switchHit));
+  //   }
+  //   if (switchHit == SW_SELF_TEST_SWITCH) {
+  //     Menus.EnterOperatorMenu();
+  //   }
+  // }
 
-  // If the user was holding the menu button when the game started
-  // then kick the balls
-  if (CurrentTime < 4000) {
-    if (RPU_ReadSingleSwitchState(SW_SELF_TEST_SWITCH)) {
-      if (OperatorSwitchPressStarted==0) {
-        OperatorSwitchPressStarted = CurrentTime;
-      } else if (CurrentTime > (OperatorSwitchPressStarted+500)) {
-        Menus.EnterOperatorMenu();
-        Menus.BallEjectInProgress(true);
-      }
-    } else {
-      OperatorSwitchPressStarted = 0;
-    }
-  }
+  // // If the user was holding the menu button when the game started
+  // // then kick the balls
+  // if (CurrentTime < 4000) {
+  //   if (RPU_ReadSingleSwitchState(SW_SELF_TEST_SWITCH)) {
+  //     if (OperatorSwitchPressStarted==0) {
+  //       OperatorSwitchPressStarted = CurrentTime;
+  //     } else if (CurrentTime > (OperatorSwitchPressStarted+500)) {
+  //       Menus.EnterOperatorMenu();
+  //       Menus.BallEjectInProgress(true);
+  //     }
+  //   } else {
+  //     OperatorSwitchPressStarted = 0;
+  //   }
+  // }
 
   return returnState;
 }
@@ -2016,14 +2009,14 @@ int InitNewBall(bool curStateChanged) {
     if (CurrentNumPlayers > 1 && (CurrentBallInPlay != 1 || CurrentPlayer != 0) && !SamePlayerShootsAgain) AlertPlayerUp();
     SamePlayerShootsAgain = false;
 
-    RPU_SetDisplayBallInPlay(CurrentBallInPlay);
-    RPU_SetLampState(LAMP_HEAD_TILT, 0);
-    for (byte count = 0; count < 4; count++) {
-      if (count==CurrentPlayer) RPU_SetLampState(PlayerUpLamps[count], 1, 0, 250);
-      else if (count<CurrentNumPlayers) RPU_SetLampState(PlayerUpLamps[count], 1);
-      else RPU_SetLampState(PlayerUpLamps[count], 0);
-      RPU_SetDisplayBlank(count, 0);
-    }
+    // RPU_SetDisplayBallInPlay(CurrentBallInPlay);
+    // RPU_SetLampState(LAMP_TILT, 0);
+    // for (byte count = 0; count < 4; count++) {
+    //   if (count==CurrentPlayer) RPU_SetLampState(PlayerUpLamps[count], 1, 0, 250);
+    //   else if (count<CurrentNumPlayers) RPU_SetLampState(PlayerUpLamps[count], 1);
+    //   else RPU_SetLampState(PlayerUpLamps[count], 0);
+    //   RPU_SetDisplayBlank(count, 0);
+    // }
 
     if (BallSaveNumSeconds > 0) {
       RPU_SetLampState(LAMP_SHOOT_AGAIN, 1, 0, 500);
@@ -2059,10 +2052,9 @@ int InitNewBall(bool curStateChanged) {
     // Add any ball start parameters here    
 
     // Reset Drop Targets
-    LeftDropTargets.ResetDropTargets(CurrentTime + 100, true, true);
-    RightDropTargets.ResetDropTargets(CurrentTime + 100, true, true);
-
-    RPU_PushToTimedSolenoidStack(SOL_SERVE_BALL, BallServeSolenoidStrength, CurrentTime + 1000, true);
+    DropTargets.ResetDropTargets(CurrentTime + 100, true, true);
+    
+    RPU_PushToTimedSolenoidStack(SOL_BALL_TROUGH, BallServeSolenoidStrength, CurrentTime + 1000, true);
     LastTimeBallServed = CurrentTime + 1000;
     
     NumberOfBallsInPlay = 1;
@@ -2097,8 +2089,7 @@ void CheckSaucerForStuckBall() {
 }
 
 void UpdateDropTargets() {
-  LeftDropTargets.Update(CurrentTime);
-  RightDropTargets.Update(CurrentTime);
+  DropTargets.Update(CurrentTime);
 }
 
 
@@ -2273,7 +2264,7 @@ int ManageGameMode() {
     ShowBonusLamps();
     ShowShootAgainLamp();
   }
-  ShowPlayerLamps();
+  //ShowPlayerLamps();
 
   if (Display_UpdateDisplays(0xFF, false, (BallFirstSwitchHitTime == 0) ? true : false, (BallFirstSwitchHitTime > 0 && ((CurrentTime - Display_GetLastTimeScoreChanged()) > 2000)) ? true : false)) {
     Audio.StopSound(SOUND_EFFECT_SCORE_TICK);
@@ -2295,13 +2286,13 @@ int ManageGameMode() {
 
         if ((BallFirstSwitchHitTime == 0 && NumTiltWarnings <= MaxTiltWarnings)) {
           // Nothing hit yet, so return the ball to the player
-          RPU_PushToTimedSolenoidStack(SOL_SERVE_BALL, BallServeSolenoidStrength, CurrentTime);
+          RPU_PushToTimedSolenoidStack(SOL_BALL_TROUGH, BallServeSolenoidStrength, CurrentTime);
           BallTimeInTrough = 0;
           returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
         } else {
           // if we haven't used the ball save, and we're under the time limit, then save the ball
           if (BallSaveEndTime && CurrentTime < (BallSaveEndTime + BALL_SAVE_GRACE_PERIOD)) {
-            RPU_PushToTimedSolenoidStack(SOL_SERVE_BALL, BallServeSolenoidStrength, CurrentTime + 100);
+            RPU_PushToTimedSolenoidStack(SOL_BALL_TROUGH, BallServeSolenoidStrength, CurrentTime + 100);
 
             RPU_SetLampState(LAMP_SHOOT_AGAIN, 0);
             BallTimeInTrough = CurrentTime;
@@ -2495,7 +2486,7 @@ int ShowMatchSequence(boolean curStateChanged) {
     MatchDelay = 1500;
     MatchDigit = CurrentTime % 10;
     NumMatchSpins = 0;
-    RPU_SetLampState(LAMP_HEAD_MATCH, 1, 0);
+    RPU_SetLampState(LAMP_MATCH, 1, 0);
     RPU_SetDisableFlippers();
     ScoreMatches = 0;
   }
@@ -2588,10 +2579,10 @@ int ShowMatchSequence(boolean curStateChanged) {
       RPU_SetDisplayBallInPlay((int)MatchDigit * 10);
       MatchDelay += 50 + 4 * NumMatchSpins;
       NumMatchSpins += 1;
-      RPU_SetLampState(LAMP_HEAD_MATCH, NumMatchSpins % 2, 0);
+      RPU_SetLampState(LAMP_MATCH, NumMatchSpins % 2, 0);
 
       if (NumMatchSpins == 40) {
-        RPU_SetLampState(LAMP_HEAD_MATCH, 0);
+        RPU_SetLampState(LAMP_MATCH, 0);
         MatchDelay = CurrentTime - MatchSequenceStartTime;
       }
     }
@@ -2604,7 +2595,7 @@ int ShowMatchSequence(boolean curStateChanged) {
         AddSpecialCredit();
         MatchDelay += 1000;
         NumMatchSpins += 1;
-        RPU_SetLampState(LAMP_HEAD_MATCH, 1);
+        RPU_SetLampState(LAMP_MATCH, 1);
       } else {
         NumMatchSpins += 1;
       }
@@ -2743,7 +2734,7 @@ int HandleSystemSwitches(int curState, byte switchHit) {
             RPU_DisableSolenoidStack();
             RPU_SetDisableFlippers(true);
             RPU_TurnOffAllLamps();
-            RPU_SetLampState(LAMP_HEAD_TILT, 1);
+            RPU_SetLampState(LAMP_TILT, 1);
             Audio.StopAllAudio();
             if (BallSaveEndTime) {
               BallSaveEndTime = 0;
@@ -2777,15 +2768,15 @@ void HandleLeftDropTarget(byte switchHit) {
 
   byte result;
   unsigned long numTargetsDown = 0;
-  result = LeftDropTargets.HandleDropTargetHit(switchHit);
+  result = DropTargets.HandleDropTargetHit(switchHit);
   numTargetsDown = (unsigned long)CountBits(result);
   boolean soundPlayed = false;
   boolean scoreAdded = false;
 
-  boolean cleared = LeftDropTargets.CheckIfBankCleared();
+  boolean cleared = DropTargets.CheckIfBankCleared();
 
   if (cleared) {
-    LeftDropTargets.ResetDropTargets(CurrentTime + 500, true);
+    DropTargets.ResetDropTargets(CurrentTime + 500, true);
     CurrentScores[CurrentPlayer] += PlayfieldMultiplier * 5000;
     PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_COMPLETE);
     soundPlayed = true;
@@ -2802,32 +2793,6 @@ void HandleLeftDropTarget(byte switchHit) {
 }
 
 
-void HandleRightDropTarget(byte switchHit) {
-
-  byte result;
-  unsigned long numTargetsDown = 0;
-  result = RightDropTargets.HandleDropTargetHit(switchHit);
-  numTargetsDown = (unsigned long)CountBits(result);
-  boolean soundPlayed = false;
-  boolean scoreAdded = false;
-
-  boolean cleared = RightDropTargets.CheckIfBankCleared();
-
-  if (cleared) {
-    CurrentScores[CurrentPlayer] += PlayfieldMultiplier * 5000;
-    RightDropTargets.ResetDropTargets(CurrentTime + 500, true);
-    PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_COMPLETE);
-    soundPlayed = true;
-    scoreAdded = true;
-  }
-
-  if (!soundPlayed) {
-    PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
-  }
-  if (!scoreAdded) {
-    CurrentScores[CurrentPlayer] += PlayfieldMultiplier * numTargetsDown * 100;
-  }
-}
 
 
 
@@ -2853,7 +2818,9 @@ void HandleGamePlaySwitches(byte switchHit) {
 
   switch (switchHit) {
 
-    case SW_POP_BUMPER:
+    case SW_R_POP_BUMPER:
+    case SW_L_POP_BUMPER:
+    case SW_B_POP_BUMPER:
       LastTimePopHit = CurrentTime;
 //      PopBumperProgress += 1;
       CurrentScores[CurrentPlayer] += 100 * PlayfieldMultiplier;
@@ -2891,26 +2858,15 @@ void HandleGamePlaySwitches(byte switchHit) {
       if (GameMode!=GAME_MODE_SKILL_SHOT) ValidateAndRegisterPlayfieldSwitch();
       break;
 
-    case SW_DROP_L_1:
-    case SW_DROP_L_2:
-    case SW_DROP_L_3:
+    case SW_DROP_1:
+    case SW_DROP_2:
+    case SW_DROP_3:
+    case SW_DROP_4:
       HandleLeftDropTarget(switchHit);
       ValidateAndRegisterPlayfieldSwitch();
       break;
 
-    case SW_DROP_R_1:
-    case SW_DROP_R_2:
-    case SW_DROP_R_3:
-      HandleRightDropTarget(switchHit);
-      ValidateAndRegisterPlayfieldSwitch();
-      break;
-
-    case SW_LEFT_SPINNER:
-      HandleSpinnerProgress();
-      ValidateAndRegisterPlayfieldSwitch();
-      break;
-
-    case SW_RIGHT_SPINNER:
+    case SW_SPINNER:
       HandleSpinnerProgress();
       ValidateAndRegisterPlayfieldSwitch();
       break;
@@ -2968,7 +2924,7 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
         }
 
         for (byte count = 0; count < 4; count++) {
-          RPU_SetLampState(PlayerUpLamps[count], 0);
+          //RPU_SetLampState(PlayerUpLamps[count], 0);
         }
 
         if (MatchEnabled) {
