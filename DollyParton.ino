@@ -2064,8 +2064,8 @@ int InitNewBall(bool curStateChanged) {
 
   return MACHINE_STATE_NORMAL_GAMEPLAY;
   
-  LastTimeThroughLoop = CurrentTime;
-}
+    LastTimeThroughLoop = CurrentTime;
+  }
 
 
 
