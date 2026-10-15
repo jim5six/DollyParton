@@ -59,42 +59,42 @@
 #define SW_COIN_1                   9
 #define SW_COIN_2                   10
 #define SW_SLAM                     15
-#define SW_DROP_1                   16
-#define SW_DROP_2                   17
-#define SW_DROP_3                   40
-#define SW_DROP_4                   41
-#define SW_SUPERSTAR                18
-#define SW_LEFT_SLING               19
-#define SW_RIGHT_SLING              20
-#define SW_L_POP_BUMPER             21
-#define SW_R_POP_BUMPER             22
-#define SW_B_POP_BUMPER             23
-#define SW_SAUCER                   32
-#define SW_LEFT_OUTLANE             34
-#define SW_LEFT_INLANE              35
-#define SW_RIGHT_OUTLANE            37
-#define SW_RIGHT_INLANE             36
-#define SW_RUBBER                   24
-#define SW_D                        25
-#define SW_O                        26
-#define SW_L1                       27
+#define SW_DROP_1                   3
+#define SW_DROP_2                   2
+#define SW_DROP_3                   1
+#define SW_DROP_4                   0
+#define SW_SUPERSTAR                4
+#define SW_LEFT_SLING               36
+#define SW_RIGHT_SLING              35
+#define SW_L_POP_BUMPER             39
+#define SW_T_POP_BUMPER             37
+#define SW_B_POP_BUMPER             38
+#define SW_SAUCER                   23
+#define SW_LEFT_OUTLANE             22
+#define SW_LEFT_INLANE              21
+#define SW_RIGHT_OUTLANE            19
+#define SW_RIGHT_INLANE             20
+#define SW_RUBBER                   33
+#define SW_D                        31
+#define SW_O                        30
+#define SW_L1                       29
 #define SW_L2                       28
-#define SW_Y                        29
-#define SW_LOWER_LEFT               30
-#define SW_LOWER_R_LANE             35
-#define SW_SPINNER                  38
+#define SW_Y                        27
+#define SW_LOWER_L_TARGET           18
+#define SW_LOWER_R_LANE             19
+#define SW_SPINNER                  16
 
 
-#define SOL_L_POP_BUMPER            6
-#define SOL_R_POP_BUMPER            6
-#define SOL_B_POP_BUMPER            6
-#define SOL_DROP_BANK_RESET         2
-#define SOL_KNOCKER                 4
-#define SOL_SAUCER                  7
-#define SOL_LEFT_SLING              10
+#define SOL_BALL_TROUGH             6
+#define SOL_KNOCKER                 5
 #define SOL_RIGHT_SLING             11
-#define SOL_BALL_TROUGH             8
-
+#define SOL_LEFT_SLING              10
+#define SOL_L_POP_BUMPER            8
+#define SOL_B_POP_BUMPER            7
+#define SOL_T_POP_BUMPER            9
+#define SOL_SAUCER                  12
+#define SOL_DROP_BANK_RESET         14
+#define SOL_COIN_LOCKOUT            15
 
 // These SolenoidAssociatedSwitches are only
 // used for Bally/Stern. On Williams, the "immediate solenoids"
@@ -102,13 +102,13 @@
 // code
 #if (RPU_MPU_ARCHITECTURE<10)
 #define NUM_SWITCHES_WITH_TRIGGERS          5 // total number of solenoid/switch pairs
-#define NUM_PRIORITY_SWITCHES_WITH_TRIGGERS 6 // This number should match the define above
+#define NUM_PRIORITY_SWITCHES_WITH_TRIGGERS 5 // This number should match the define above
 
 struct PlayfieldAndCabinetSwitch SolenoidAssociatedSwitches[] = {
   { SW_RIGHT_SLING, SOL_RIGHT_SLING, 4},
   { SW_LEFT_SLING, SOL_LEFT_SLING, 4},
   { SW_L_POP_BUMPER, SOL_L_POP_BUMPER, 4},
-  { SW_R_POP_BUMPER, SOL_R_POP_BUMPER, 4},
+  { SW_T_POP_BUMPER, SOL_T_POP_BUMPER, 4},
   { SW_B_POP_BUMPER, SOL_B_POP_BUMPER, 4}
 };
 #endif

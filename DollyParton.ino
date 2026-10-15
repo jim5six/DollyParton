@@ -9,7 +9,6 @@
 
 #include "RPU_Config.h"
 #include "RPU.h"
-#include "DropTargets.h"
 #include "DollyParton.h"
 #include "OperatorMenus.h"
 #include "AudioHandler.h"
@@ -100,57 +99,54 @@ boolean MachineStateChanged = true;
 #define SOUND_EFFECT_POP_BUMPER               6
 #define SOUND_EFFECT_LEFT_SLING               7
 #define SOUND_EFFECT_RIGHT_SLING              8
-#define SOUND_EFFECT_GAME_OVER                21
+#define SOUND_EFFECT_POP_BASS                 9
+#define SOUND_EFFECT_POP_HIGHHAT              10
+#define SOUND_EFFECT_POP_SNARE                11
 #define SOUND_EFFECT_MATCH_SPIN               28
 #define SOUND_EFFECT_DROP_TARGET_SOUND_1      30
 #define SOUND_EFFECT_DROP_TARGET_COMPLETE     40
-#define SOUND_EFFECT_BONUS_1                  81
-#define SOUND_EFFECT_BONUS_2                  82
-#define SOUND_EFFECT_BONUS_3                  83
-#define SOUND_EFFECT_BONUS_4                  84
-#define SOUND_EFFECT_BONUS_5                  85
-#define SOUND_EFFECT_BONUS_6                  86
-#define SOUND_EFFECT_BONUS_7                  87
-#define SOUND_EFFECT_BONUS_8                  88
-#define SOUND_EFFECT_STARTUP_1                100
-#define SOUND_EFFECT_STARTUP_2                101
+//#define SOUND_EFFECT_BONUS_1                  81
+//#define SOUND_EFFECT_BONUS_2                  82
+//#define SOUND_EFFECT_BONUS_3                  83
+//#define SOUND_EFFECT_BONUS_4                  84
+//#define SOUND_EFFECT_BONUS_5                  85
+//#define SOUND_EFFECT_BONUS_6                  86
+//#define SOUND_EFFECT_BONUS_7                  87
+//#define SOUND_EFFECT_BONUS_8                  88
+//#define SOUND_EFFECT_STARTUP_1                100
+//#define SOUND_EFFECT_STARTUP_2                101
 
 #define SOUND_EFFECT_COIN_DROP_1              105
 #define SOUND_EFFECT_COIN_DROP_2              106
 #define SOUND_EFFECT_COIN_DROP_3              107
 
-#define SOUND_EFFECT_BACKGROUND_SONG_1                400
-#define SOUND_EFFECT_BACKGROUND_SONG_2                401
-#define SOUND_EFFECT_BACKGROUND_SONG_3                402
-#define SOUND_EFFECT_BACKGROUND_SONG_4                403
-#define SOUND_EFFECT_BACKGROUND_SONG_5                404
-#define SOUND_EFFECT_BACKGROUND_SONG_6                405
+#define SOUND_EFFECT_BG_JOLENE                400
+#define SOUND_EFFECT_BG_COAT_COLORS           401
 
 #define SOUND_EFFECT_VP_GAME_RULES_EASY               423
 #define SOUND_EFFECT_VP_GAME_RULES_MEDIUM             424
 #define SOUND_EFFECT_VP_GAME_RULES_HARD               425
 
-#define SOUND_EFFECT_RALLY_MUSIC_1                    450
-#define SOUND_EFFECT_RALLY_MUSIC_2                    451
-#define SOUND_EFFECT_RALLY_MUSIC_3                    452
-#define SOUND_EFFECT_RALLY_MUSIC_4                    453
-#define SOUND_EFFECT_RALLY_MUSIC_5                    454
+// #define SOUND_EFFECT_RALLY_MUSIC_1                    450
+// #define SOUND_EFFECT_RALLY_MUSIC_2                    451
+// #define SOUND_EFFECT_RALLY_MUSIC_3                    452
+// #define SOUND_EFFECT_RALLY_MUSIC_4                    453
+// #define SOUND_EFFECT_RALLY_MUSIC_5                    454
 
 
 // Game play status callouts
-#define SOUND_EFFECT_VP_PLAYER_1_UP                   301
-#define SOUND_EFFECT_VP_PLAYER_2_UP                   302
-#define SOUND_EFFECT_VP_PLAYER_3_UP                   303
-#define SOUND_EFFECT_VP_PLAYER_4_UP                   304
-#define SOUND_EFFECT_VP_EXTRA_BALL                    305
+#define SOUND_EFFECT_BALL_SAVE                300
+#define SOUND_EFFECT_EXTRA_BALL               301
+#define SOUND_EFFECT_GAME_OVER                302
+#define SOUND_EFFECT_GAME_START               303
+#define SOUND_EFFECT_WELCOME                  304
+
 
 #define SOUND_EFFECT_VP_ADD_PLAYER_1        306
 #define SOUND_EFFECT_VP_ADD_PLAYER_2        (SOUND_EFFECT_VP_ADD_PLAYER_1+1)
 #define SOUND_EFFECT_VP_ADD_PLAYER_3        (SOUND_EFFECT_VP_ADD_PLAYER_1+2)
 #define SOUND_EFFECT_VP_ADD_PLAYER_4        (SOUND_EFFECT_VP_ADD_PLAYER_1+3)
 #define SOUND_EFFECT_VP_SHOOT_AGAIN         310
-
-#define SOUND_EFFECT_VP_BALL_SAVE                       326
 
 #define SOUND_EFFECT_DIAG_START                   1900
 #define SOUND_EFFECT_DIAG_CREDIT_RESET_BUTTON     1900
@@ -302,14 +298,6 @@ unsigned long LastTimeSaucerSeen;
 
 #define DROP_TARGET_RESET_STRENGTH    10
 #define KNOCKER_SOLENOID_STRENGTH     5
-
-// CUSTOMIZATION TODO:
-// If your game has drop targets, set up objects here. Be sure to
-// check out the types of target banks supported in DropTargtes.h
-DropTargetBank DropTargets(4, 1, DROP_TARGET_TYPE_BLY_1, DROP_TARGET_RESET_STRENGTH);
-
-//byte PlayerUpLamps[4] = {LAMP_HEAD_PLAYER_1_UP, LAMP_HEAD_PLAYER_2_UP, LAMP_HEAD_PLAYER_3_UP, LAMP_HEAD_PLAYER_4_UP};
-
 
 /******************************************************
 
@@ -560,23 +548,25 @@ byte LampConvertDisplayNumberToIndex(byte displayNumber) {
 unsigned short SolenoidConvertDisplayNumberToIndex(byte displayNumber) {
   switch (displayNumber) {
     case  0: return OPERATOR_MENU_VALUE_UNUSED;
-    case  1: return OPERATOR_MENU_VALUE_UNUSED;
-    case  2: return OPERATOR_MENU_VALUE_UNUSED;
-    case  3: return OPERATOR_MENU_VALUE_UNUSED;
-    case  5: return SOL_DROP_BANK_RESET;
-    case  7: return SOL_KNOCKER;
-    case  8: return SOL_SAUCER;
-    case  9: return SOL_LEFT_SLING;
-    case 10: return SOL_RIGHT_SLING;
+    case  1: return SOL_BALL_TROUGH;
+    case  2: return SOL_KNOCKER;
+    case  3: return SOL_L_POP_BUMPER;
+    case  4: return SOL_B_POP_BUMPER;
+    case  5: return SOL_T_POP_BUMPER;
+    case  6: return SOL_SAUCER;
+    case  7: return SOL_RIGHT_SLING;
+    case  8: return SOL_LEFT_SLING;
+    case  9: return SOL_DROP_BANK_RESET;
+    case 10: return SOL_COIN_LOCKOUT;
     case 11: return OPERATOR_MENU_VALUE_UNUSED;
     case 12: return OPERATOR_MENU_VALUE_UNUSED;
-    case 13: return SOL_BALL_TROUGH;
+    case 13: return OPERATOR_MENU_VALUE_UNUSED;
     case 14: return OPERATOR_MENU_VALUE_UNUSED;
-    case 15: return 0x4000; // Flipper Mute
+    case 15: return OPERATOR_MENU_VALUE_UNUSED;
     case 16: return OPERATOR_MENU_VALUE_UNUSED;
     case 17: return OPERATOR_MENU_VALUE_UNUSED; // unused 0x1000
     case 18: return OPERATOR_MENU_VALUE_UNUSED; // unused 0x8000
-    case 19: return 0x2000; // Topper
+    case 19: return OPERATOR_MENU_VALUE_UNUSED;
     default: return OPERATOR_MENU_VALUE_OUT_OF_RANGE;
   }
 }
@@ -594,14 +584,14 @@ byte SolenoidConvertDisplayNumberToTestStrength(byte displayNumber) {
     case  5: return 4;
     case  6: return 4;
     case  7: return 4;
-    case  8: return SaucerSolenoidStrength;
+    case  8: return 4;
     case  9: return 4;
     case 10: return 4;
-    case 11: return 4;
-    case 12: return 4;
-    case 13: return BallServeSolenoidStrength;
-    case 14: return 4;
-    case 15: return 4;
+    case 11: return OPERATOR_MENU_VALUE_UNUSED;
+    case 12: return OPERATOR_MENU_VALUE_UNUSED;
+    case 13: return OPERATOR_MENU_VALUE_UNUSED;
+    case 14: return OPERATOR_MENU_VALUE_UNUSED;
+    case 15: return OPERATOR_MENU_VALUE_UNUSED;
     case 16: return OPERATOR_MENU_VALUE_UNUSED;
     case 17: return OPERATOR_MENU_VALUE_UNUSED;
     case 18: return OPERATOR_MENU_VALUE_UNUSED;
@@ -726,21 +716,11 @@ void setup() {
   CurrentAchievements[2] = 0;
   CurrentAchievements[3] = 0;
 
-  // CUSTOMIZATION TODO:
-  // If your game has drop targets, this is a good place
-  // to configure the drop target switches and solenoids
-  // Initialize any drop target variables here
-  DropTargets.DefineSwitch(0, SW_DROP_1);
-  DropTargets.DefineSwitch(1, SW_DROP_2);
-  DropTargets.DefineSwitch(2, SW_DROP_3);
-  DropTargets.DefineSwitch(3, SW_DROP_4);
-  DropTargets.DefineResetSolenoid(0, SOL_DROP_BANK_RESET);
-  
-  CurrentTime = millis();
+    CurrentTime = millis();
 
   // CUSTOMIZATION TODO:
   // You can play a machine startup sound here
-  Audio.QueueSound(SOUND_EFFECT_STARTUP_1 + (micros()) % 2, AUDIO_PLAY_TYPE_WAV_TRIGGER, CurrentTime + 1200);
+  Audio.QueueSound(SOUND_EFFECT_WELCOME + (micros()) % 2, AUDIO_PLAY_TYPE_WAV_TRIGGER, CurrentTime + 1200);
   OperatorSwitchPressStarted = 0;
   InOperatorMenu = false;
 
@@ -779,15 +759,6 @@ byte ReadSetting(byte setting, byte defaultValue, byte maxValue) {
   return value;
 }
 
-// This function is useful for checking the status of drop target switches
-byte CheckSequentialSwitches(byte startingSwitch, byte numSwitches) {
-  byte returnSwitches = 0;
-  for (byte count = 0; count < numSwitches; count++) {
-    returnSwitches |= (RPU_ReadSingleSwitchState(startingSwitch + count) << count);
-  }
-  return returnSwitches;
-}
-
 // CUSTOMIZATION TODO:
 // Set up lamp functions so the lamps will reflect
 // the current game state. For organization, create a different
@@ -811,14 +782,6 @@ void SetGeneralIlluminationOn(boolean setGIOn = true) {
   // this line prevents compiler warnings.
   (void)setGIOn;
 }
-
-// void ShowPlayerLamps() {  
-//   for (byte count = 0; count < 4; count++) {
-//     if (count==CurrentPlayer) RPU_SetLampState(PlayerUpLamps[count], 1, 0, 250);
-//     else if (count<CurrentNumPlayers) RPU_SetLampState(PlayerUpLamps[count], 1);
-//     else RPU_SetLampState(PlayerUpLamps[count], 0);
-//   }  
-// }
 
 byte BonusLampAssignments[11] = { LAMP_22K_BONUS, LAMP_44K_BONUS};
 
@@ -870,12 +833,6 @@ boolean AddPlayer(boolean resetNumPlayers = false) {
     // If this is second, third, or fourth player, then playe the announcment
     QueueNotification(SOUND_EFFECT_VP_ADD_PLAYER_1 + (CurrentNumPlayers - 1), 10);
   }
-
-  // for (byte count = 0; count < 4; count++) {
-  //   if (count==CurrentPlayer) RPU_SetLampState(PlayerUpLamps[count], 1, 0, 250);
-  //   else if (count<CurrentNumPlayers) RPU_SetLampState(PlayerUpLamps[count], 1);
-  //   else RPU_SetLampState(PlayerUpLamps[count], 0);
-  // }
 
   if (!FreePlayMode) {
     Credits -= 1;
@@ -982,7 +939,7 @@ boolean AwardExtraBall(boolean basedOnScore = false) {
     } else {
       SamePlayerShootsAgain = true;
       RPU_SetLampState(LAMP_SHOOT_AGAIN, SamePlayerShootsAgain);
-      QueueNotification(SOUND_EFFECT_VP_EXTRA_BALL, 8);
+      QueueNotification(SOUND_EFFECT_EXTRA_BALL, 8);
     }
     return true;
   }
@@ -1452,7 +1409,7 @@ void RunOperatorMenu() {
     } else if (Menus.GetTopLevel()==OPERATOR_MENU_BASIC_ADJ_MENU) {
       if (Menus.GetSubLevel()==OM_BASIC_ADJ_IDS_MUSIC_VOLUME) {
         if (SoundSettingTimeout) Audio.StopAllAudio();
-        Audio.PlaySound(SOUND_EFFECT_BACKGROUND_SONG_1, AUDIO_PLAY_TYPE_WAV_TRIGGER, MusicVolume);
+        Audio.PlaySound(SOUND_EFFECT_BG_JOLENE, AUDIO_PLAY_TYPE_WAV_TRIGGER, MusicVolume);
         Audio.SetMusicVolume(MusicVolume);
         SoundSettingTimeout = CurrentTime + 5000;
       } else if (Menus.GetSubLevel()==OM_BASIC_ADJ_IDS_SOUNDFX_VOLUME) {
@@ -1477,13 +1434,13 @@ void RunOperatorMenu() {
 
   if (SoundTestStart && CurrentTime>SoundTestStart) {
     if (SoundTestSequence==0) {
-      PlayBackgroundSong(SOUND_EFFECT_BACKGROUND_SONG_1);
+      PlayBackgroundSong(SOUND_EFFECT_BG_JOLENE);
       SoundTestSequence = 1;
     } else if (SoundTestSequence==1 && CurrentTime>(SoundTestStart+5000)) {
       PlaySoundEffect(SOUND_EFFECT_SPINNER);
       SoundTestSequence = 2;
     } else if (SoundTestSequence==2 && CurrentTime>(SoundTestStart+10000)) {
-      Audio.QueuePrioritizedNotification(SOUND_EFFECT_VP_EXTRA_BALL, 0, 10, CurrentTime);
+      Audio.QueuePrioritizedNotification(SOUND_EFFECT_EXTRA_BALL, 0, 10, CurrentTime);
       SoundTestSequence = 3;
     }
   }
@@ -1566,9 +1523,9 @@ void QueueNotification(unsigned int soundEffectNum, byte priority) {
 }
 
 
-void AlertPlayerUp() {
-  QueueNotification(SOUND_EFFECT_VP_PLAYER_1_UP + CurrentPlayer, 1);
-}
+ void AlertPlayerUp() {
+//   QueueNotification(SOUND_EFFECT_WELCOME, 1);
+ }
 
 
 
@@ -1756,7 +1713,7 @@ int RunAttractMode(int curState, boolean curStateChanged) {
     }
   }
 
-  //RPU_SetLampState(LAMP_APRON_CREDITS, (FreePlayMode || Credits) ? true : false, 0, 200);
+  RPU_SetLampState(LAMP_CREDIT_LIGHT, (FreePlayMode || Credits) ? true : false, 0, 200);
 
   // Alternate displays between high score and blank
   if (CurrentTime < 16000) {
@@ -1776,9 +1733,6 @@ int RunAttractMode(int curState, boolean curStateChanged) {
     AttractLastHeadMode = 2;
     Display_UpdateDisplays(0xFF, false, false, false, HighScore);
     RPU_SetLampState(LAMP_HSTD, 1);
-    // for (byte count=0; count<4; count++) {
-    //   RPU_SetLampState(PlayerUpLamps[count], 0);
-    //}
   } else {
     if (AttractLastHeadMode != 3) {
       if (CurrentTime < 32000) {
@@ -1801,36 +1755,37 @@ int RunAttractMode(int curState, boolean curStateChanged) {
 
   byte attractPlayfieldPhase = ((CurrentTime / 5000) % 6);
 
-  ShowLampAnimation(attractPlayfieldPhase % 3, 20, CurrentTime, 18, false, false);
+  //ShowLampAnimation(attractPlayfieldPhase % 3, 20, CurrentTime, 18, false, false);
+  ShowLampAnimation(0, 40, CurrentTime, 18, false, false);
 
-  // byte switchHit;
-  // while ( (switchHit = RPU_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY ) {
-  //   if (switchHit == SW_CREDIT_RESET) {
-  //     if (AddPlayer(true)) returnState = MACHINE_STATE_INIT_GAMEPLAY;
-  //   }
-  //   if (switchHit == SW_COIN_1 || switchHit == SW_COIN_2 || switchHit == SW_COIN_3 ) {
-  //     AddCoinToAudit(SwitchToChuteNum(switchHit));
-  //     AddCoin(SwitchToChuteNum(switchHit));
-  //   }
-  //   if (switchHit == SW_SELF_TEST_SWITCH) {
-  //     Menus.EnterOperatorMenu();
-  //   }
-  // }
+  byte switchHit;
+  while ( (switchHit = RPU_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY ) {
+    if (switchHit == SW_CREDIT_RESET) {
+      if (AddPlayer(true)) returnState = MACHINE_STATE_INIT_GAMEPLAY;
+    }
+    if (switchHit == SW_COIN_1 || switchHit == SW_COIN_2 || switchHit == SW_COIN_3 ) {
+      AddCoinToAudit(SwitchToChuteNum(switchHit));
+      AddCoin(SwitchToChuteNum(switchHit));
+    }
+    if (switchHit == SW_SELF_TEST_SWITCH) {
+      Menus.EnterOperatorMenu();
+    }
+  }
 
-  // // If the user was holding the menu button when the game started
-  // // then kick the balls
-  // if (CurrentTime < 4000) {
-  //   if (RPU_ReadSingleSwitchState(SW_SELF_TEST_SWITCH)) {
-  //     if (OperatorSwitchPressStarted==0) {
-  //       OperatorSwitchPressStarted = CurrentTime;
-  //     } else if (CurrentTime > (OperatorSwitchPressStarted+500)) {
-  //       Menus.EnterOperatorMenu();
-  //       Menus.BallEjectInProgress(true);
-  //     }
-  //   } else {
-  //     OperatorSwitchPressStarted = 0;
-  //   }
-  // }
+  // If the user was holding the menu button when the game started
+  // then kick the balls
+  if (CurrentTime < 4000) {
+    if (RPU_ReadSingleSwitchState(SW_SELF_TEST_SWITCH)) {
+      if (OperatorSwitchPressStarted==0) {
+        OperatorSwitchPressStarted = CurrentTime;
+      } else if (CurrentTime > (OperatorSwitchPressStarted+500)) {
+        Menus.EnterOperatorMenu();
+        Menus.BallEjectInProgress(true);
+      }
+    } else {
+      OperatorSwitchPressStarted = 0;
+    }
+  }
 
   return returnState;
 }
@@ -2002,21 +1957,18 @@ int InitNewBall(bool curStateChanged) {
       if (CurrentBallInPlay==1) QueueNotification(SOUND_EFFECT_VP_GAME_RULES_EASY + (rulesLevel-GAME_RULES_EASY), 10);
     }
 
-    RPU_TurnOffAllLamps();
-    BallFirstSwitchHitTime = 0;
+      RPU_TurnOffAllLamps();
+      BallFirstSwitchHitTime = 0;
 
-    RPU_SetDisplayCredits(Credits, !FreePlayMode);
-    if (CurrentNumPlayers > 1 && (CurrentBallInPlay != 1 || CurrentPlayer != 0) && !SamePlayerShootsAgain) AlertPlayerUp();
-    SamePlayerShootsAgain = false;
+      RPU_SetDisplayCredits(Credits, !FreePlayMode);
+      if (CurrentNumPlayers > 1 && (CurrentBallInPlay != 1 || CurrentPlayer != 0) && !SamePlayerShootsAgain) AlertPlayerUp();
+        SamePlayerShootsAgain = false;
 
     // RPU_SetDisplayBallInPlay(CurrentBallInPlay);
     // RPU_SetLampState(LAMP_TILT, 0);
-    // for (byte count = 0; count < 4; count++) {
-    //   if (count==CurrentPlayer) RPU_SetLampState(PlayerUpLamps[count], 1, 0, 250);
-    //   else if (count<CurrentNumPlayers) RPU_SetLampState(PlayerUpLamps[count], 1);
-    //   else RPU_SetLampState(PlayerUpLamps[count], 0);
-    //   RPU_SetDisplayBlank(count, 0);
-    // }
+    for (byte count = 0; count < 4; count++) {
+      RPU_SetDisplayBlank(count, 0);
+     }
 
     if (BallSaveNumSeconds > 0) {
       RPU_SetLampState(LAMP_SHOOT_AGAIN, 1, 0, 500);
@@ -2052,17 +2004,17 @@ int InitNewBall(bool curStateChanged) {
     // Add any ball start parameters here    
 
     // Reset Drop Targets
-    DropTargets.ResetDropTargets(CurrentTime + 100, true, true);
-    
+    RPU_PushToTimedSolenoidStack(SOL_DROP_BANK_RESET, SaucerSolenoidStrength, CurrentTime, true);
+
     RPU_PushToTimedSolenoidStack(SOL_BALL_TROUGH, BallServeSolenoidStrength, CurrentTime + 1000, true);
     LastTimeBallServed = CurrentTime + 1000;
     
     NumberOfBallsInPlay = 1;
 
-    PlayBackgroundSong(SOUND_EFFECT_RALLY_MUSIC_1 + (CurrentBallInPlay-1));
+    PlayBackgroundSong(SOUND_EFFECT_BG_JOLENE);
   }
-
-  return MACHINE_STATE_NORMAL_GAMEPLAY;
+  
+    return MACHINE_STATE_NORMAL_GAMEPLAY;
   
     LastTimeThroughLoop = CurrentTime;
   }
@@ -2088,12 +2040,6 @@ void CheckSaucerForStuckBall() {
 
 }
 
-void UpdateDropTargets() {
-  DropTargets.Update(CurrentTime);
-}
-
-
-
 byte GameModeStage;
 boolean DisplaysNeedRefreshing = false;
 unsigned long LastTimePromptPlayed = 0;
@@ -2111,8 +2057,6 @@ int ManageGameMode() {
 
   boolean specialAnimationRunning = false;
   boolean statusRunning = false;
-
-  UpdateDropTargets();
 
   if ((CurrentTime - LastSwitchHitTime) > 3000) TimersPaused = true;
   else TimersPaused = false;
@@ -2194,9 +2138,9 @@ int ManageGameMode() {
           Serial.write("Entering unstructured play\n");
         }
         SetGeneralIlluminationOn(true);
-        unsigned short songNum = SOUND_EFFECT_BACKGROUND_SONG_1;
-        if (CurrentBallInPlay>1 && CurrentBallInPlay<5) songNum = SOUND_EFFECT_BACKGROUND_SONG_2 + (CurrentTime%3);
-        if (CurrentBallInPlay==BallsPerGame) songNum = SOUND_EFFECT_BACKGROUND_SONG_5;
+        unsigned short songNum = SOUND_EFFECT_BG_JOLENE;
+        if (CurrentBallInPlay>1 && CurrentBallInPlay<5) songNum = SOUND_EFFECT_BG_COAT_COLORS + (CurrentTime%3);
+        if (CurrentBallInPlay==BallsPerGame) songNum = SOUND_EFFECT_BG_JOLENE;
         if (Audio.GetBackgroundSong() != songNum) {
           PlayBackgroundSong(songNum);
         }
@@ -2305,7 +2249,7 @@ int ManageGameMode() {
                 if (DEBUG_MESSAGES) {
                   Serial.write("Last ball save\n");
                 }
-                QueueNotification(SOUND_EFFECT_VP_BALL_SAVE, 10);
+                QueueNotification(SOUND_EFFECT_BALL_SAVE, 10);
               } else {
                 if (DEBUG_MESSAGES) {
                   Serial.write("Not last ball save\n");
@@ -2395,11 +2339,11 @@ int CountdownBonus(boolean curStateChanged) {
 
       // Only give sound & score if this isn't a tilt
       if (NumTiltWarnings <= MaxTiltWarnings) {
-        int soundToPlay = SOUND_EFFECT_BONUS_1 + (BonusSoundIncrement/4);
-        if (soundToPlay>SOUND_EFFECT_BONUS_8) soundToPlay = SOUND_EFFECT_BONUS_8;
-        if (LastBonusSoundPlayed!=0) Audio.StopSound(LastBonusSoundPlayed);
-        PlaySoundEffect(soundToPlay);
-        LastBonusSoundPlayed = soundToPlay;
+        // int soundToPlay = SOUND_EFFECT_BONUS_1 + (BonusSoundIncrement/4);
+        // if (soundToPlay>SOUND_EFFECT_BONUS_8) soundToPlay = SOUND_EFFECT_BONUS_8;
+        // if (LastBonusSoundPlayed!=0) Audio.StopSound(LastBonusSoundPlayed);
+        // PlaySoundEffect(soundToPlay);
+        // LastBonusSoundPlayed = soundToPlay;
         BonusSoundIncrement += 1;
         CurrentScores[CurrentPlayer] += 1000;
       }
@@ -2758,46 +2702,6 @@ int HandleSystemSwitches(int curState, byte switchHit) {
   return returnState;
 }
 
-
-
-
-
-
-
-void HandleLeftDropTarget(byte switchHit) {
-
-  byte result;
-  unsigned long numTargetsDown = 0;
-  result = DropTargets.HandleDropTargetHit(switchHit);
-  numTargetsDown = (unsigned long)CountBits(result);
-  boolean soundPlayed = false;
-  boolean scoreAdded = false;
-
-  boolean cleared = DropTargets.CheckIfBankCleared();
-
-  if (cleared) {
-    DropTargets.ResetDropTargets(CurrentTime + 500, true);
-    CurrentScores[CurrentPlayer] += PlayfieldMultiplier * 5000;
-    PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_COMPLETE);
-    soundPlayed = true;
-    scoreAdded = true;
-  }
-
-  if (!soundPlayed) {
-    PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
-  }
-  if (!scoreAdded) {
-    CurrentScores[CurrentPlayer] += PlayfieldMultiplier * numTargetsDown * 100;
-  }
-
-}
-
-
-
-
-
-
-
 void HandleSpinnerProgress() {
 
   LastSpinnerHitTime = CurrentTime;
@@ -2818,69 +2722,134 @@ void HandleGamePlaySwitches(byte switchHit) {
 
   switch (switchHit) {
 
-    case SW_R_POP_BUMPER:
+    case SW_T_POP_BUMPER:
+      LastTimePopHit = CurrentTime;
+      PopBumperProgress += 1;
+      CurrentScores[CurrentPlayer] += 10 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+      ValidateAndRegisterPlayfieldSwitch();
+      break;
     case SW_L_POP_BUMPER:
+      LastTimePopHit = CurrentTime;
+      PopBumperProgress += 1;
+      CurrentScores[CurrentPlayer] += 20 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_POP_BASS);
+      ValidateAndRegisterPlayfieldSwitch();
+      break;
     case SW_B_POP_BUMPER:
       LastTimePopHit = CurrentTime;
-//      PopBumperProgress += 1;
-      CurrentScores[CurrentPlayer] += 100 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_POP_BUMPER);
+      PopBumperProgress += 1;
+      CurrentScores[CurrentPlayer] += 30 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_POP_HIGHHAT);
       ValidateAndRegisterPlayfieldSwitch();
       break;
-
     case SW_LEFT_INLANE:
+      CurrentScores[CurrentPlayer] += 40 * PlayfieldMultiplier;
       ValidateAndRegisterPlayfieldSwitch();
       break;
-
     case SW_RIGHT_INLANE:
+      CurrentScores[CurrentPlayer] += 50 * PlayfieldMultiplier;
       ValidateAndRegisterPlayfieldSwitch();
       break;
-
     case SW_LEFT_OUTLANE:
-      SetBallSave(4000, 0, true); // Add 4 grace seconds to ball save if it's still on
+      CurrentScores[CurrentPlayer] += 60 * PlayfieldMultiplier;
       ValidateAndRegisterPlayfieldSwitch();
       break;
-
     case SW_RIGHT_OUTLANE:
-      SetBallSave(4000, 0, true); // Add 4 grace seconds to ball save if it's still on
+      CurrentScores[CurrentPlayer] += 70 * PlayfieldMultiplier;
       ValidateAndRegisterPlayfieldSwitch();
       break;
-
+    case SW_LOWER_L_TARGET:
+      CurrentScores[CurrentPlayer] += 80 * PlayfieldMultiplier;
+      ValidateAndRegisterPlayfieldSwitch();
+      break;
     case SW_LEFT_SLING:
-      CurrentScores[CurrentPlayer] += PlayfieldMultiplier * 10;
+      CurrentScores[CurrentPlayer] += 90 * PlayfieldMultiplier;
       PlaySoundEffect(SOUND_EFFECT_LEFT_SLING);
       if (GameMode!=GAME_MODE_SKILL_SHOT) ValidateAndRegisterPlayfieldSwitch();
       break;
-
     case SW_RIGHT_SLING:
-      CurrentScores[CurrentPlayer] += PlayfieldMultiplier * 10;
+      CurrentScores[CurrentPlayer] += 100 * PlayfieldMultiplier;
       PlaySoundEffect(SOUND_EFFECT_RIGHT_SLING);
       if (GameMode!=GAME_MODE_SKILL_SHOT) ValidateAndRegisterPlayfieldSwitch();
       break;
-
     case SW_DROP_1:
+      CurrentScores[CurrentPlayer] += 110 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);     
+      if (GameMode!=GAME_MODE_SKILL_SHOT) ValidateAndRegisterPlayfieldSwitch();
+      break;
     case SW_DROP_2:
+      CurrentScores[CurrentPlayer] += 120 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
+      if (GameMode!=GAME_MODE_SKILL_SHOT) ValidateAndRegisterPlayfieldSwitch();
+      break;
     case SW_DROP_3:
+      CurrentScores[CurrentPlayer] += 130 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
+      if (GameMode!=GAME_MODE_SKILL_SHOT) ValidateAndRegisterPlayfieldSwitch();
+      break;
     case SW_DROP_4:
-      HandleLeftDropTarget(switchHit);
+      CurrentScores[CurrentPlayer] += 140 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
+      if (GameMode!=GAME_MODE_SKILL_SHOT) ValidateAndRegisterPlayfieldSwitch();
+      break;
+    case SW_SUPERSTAR:
+      CurrentScores[CurrentPlayer] += 150 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_COMPLETE);
+      RPU_PushToTimedSolenoidStack(SOL_DROP_BANK_RESET, SaucerSolenoidStrength, CurrentTime + 5000, true);
+      break;
+    case SW_RUBBER:
+      CurrentScores[CurrentPlayer] += 160 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
       ValidateAndRegisterPlayfieldSwitch();
       break;
-
+    case SW_D:
+      CurrentScores[CurrentPlayer] += 170 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
+      ValidateAndRegisterPlayfieldSwitch();
+      break;
+    case SW_O:
+      CurrentScores[CurrentPlayer] += 180 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
+      ValidateAndRegisterPlayfieldSwitch();
+      break;
+    case SW_L1:
+      CurrentScores[CurrentPlayer] += 190 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
+      ValidateAndRegisterPlayfieldSwitch();
+      break;
+    case SW_L2:
+      CurrentScores[CurrentPlayer] += 200 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
+      ValidateAndRegisterPlayfieldSwitch();
+      break;
+    case SW_Y:
+      CurrentScores[CurrentPlayer] += 210 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
+      ValidateAndRegisterPlayfieldSwitch();
+      break;
     case SW_SPINNER:
-      HandleSpinnerProgress();
+      CurrentScores[CurrentPlayer] += 220 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_SPINNER);
+      //HandleSpinnerProgress();
       ValidateAndRegisterPlayfieldSwitch();
       break;
-
     case SW_SAUCER:
+      CurrentScores[CurrentPlayer] += 230 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_SPINNER);
+      RPU_PushToTimedSolenoidStack(SOL_SAUCER, SaucerSolenoidStrength, CurrentTime + 1000, true);
+      
+      
+      //HandleSpinnerProgress();
+      ValidateAndRegisterPlayfieldSwitch();
+
       // Saucer kitckout is now handled by debouncer
       // We'll validate the PF with this switch, unless
       // we just fired the Saucer as part of the ball search.
-      LastTimeSaucerSeen = CurrentTime;
-      ValidateAndRegisterPlayfieldSwitch();
+      //LastTimeSaucerSeen = CurrentTime;
+      //ValidateAndRegisterPlayfieldSwitch();
       break;
-
-
-  }
+    }
 
 }
 
@@ -2904,7 +2873,7 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
     RPU_SetDisplayCredits(Credits, !FreePlayMode);
 
     if (SamePlayerShootsAgain) {
-      QueueNotification(SOUND_EFFECT_VP_SHOOT_AGAIN, 10);
+      QueueNotification(SOUND_EFFECT_BALL_SAVE, 10);
       returnState = MACHINE_STATE_INIT_NEW_BALL;
     } else {
 
@@ -2921,10 +2890,6 @@ int RunGamePlayMode(int curState, boolean curStateChanged) {
         PlaySoundEffect(SOUND_EFFECT_GAME_OVER);
         for (int count = 0; count < CurrentNumPlayers; count++) {
           RPU_SetDisplay(count, CurrentScores[count], true, 2);
-        }
-
-        for (byte count = 0; count < 4; count++) {
-          //RPU_SetLampState(PlayerUpLamps[count], 0);
         }
 
         if (MatchEnabled) {
