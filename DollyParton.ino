@@ -1756,7 +1756,7 @@ int RunAttractMode(int curState, boolean curStateChanged) {
   byte attractPlayfieldPhase = ((CurrentTime / 5000) % 6);
 
   //ShowLampAnimation(attractPlayfieldPhase % 3, 20, CurrentTime, 18, false, false);
-  ShowLampAnimation(0, 40, CurrentTime, 18, false, false);
+  ShowLampAnimation(1, 48, CurrentTime, 18, false, false);
 
   byte switchHit;
   while ( (switchHit = RPU_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY ) {
@@ -1981,7 +1981,7 @@ int InitNewBall(bool curStateChanged) {
     // Initialize game-specific start-of-ball lights & variables
     GameModeStartTime = 0;
     GameModeEndTime = 0;
-    GameMode = GAME_MODE_SKILL_SHOT;
+    GameMode = GAME_MODE_UNSTRUCTURED_PLAY;
 
     SpecialCollected = false;
     SpecialAvailable = false;
@@ -2004,18 +2004,14 @@ int InitNewBall(bool curStateChanged) {
     // Add any ball start parameters here    
 
     // Reset Drop Targets
-    RPU_PushToTimedSolenoidStack(SOL_DROP_BANK_RESET, SaucerSolenoidStrength, CurrentTime, true);
+    RPU_PushToTimedSolenoidStack(SOL_DROP_BANK_RESET, BallServeSolenoidStrength, CurrentTime, true);
 
     RPU_PushToTimedSolenoidStack(SOL_BALL_TROUGH, BallServeSolenoidStrength, CurrentTime + 1000, true);
     LastTimeBallServed = CurrentTime + 1000;
     
     NumberOfBallsInPlay = 1;
-
-    PlayBackgroundSong(SOUND_EFFECT_BG_JOLENE);
   }
-  
     return MACHINE_STATE_NORMAL_GAMEPLAY;
-  
     LastTimeThroughLoop = CurrentTime;
   }
 
@@ -2107,11 +2103,11 @@ int ManageGameMode() {
             // This code flutters the player up during skill shot to let them know
 
             for (byte count = 0; count < RPU_NUMBER_OF_PLAYERS_ALLOWED; count++) {
-#ifdef RPU_OS_USE_7_DIGIT_DISPLAYS
+              #ifdef RPU_OS_USE_7_DIGIT_DISPLAYS
               if (!statusRunning && count==CurrentPlayer) Display_OverrideScoreDisplay(count%RPU_NUMBER_OF_PLAYER_DISPLAYS, ((unsigned long)CurrentPlayer + 1) * 1111111, DISPLAY_OVERRIDE_ANIMATION_FLUTTER);
-#else              
+              #else              
               if (!statusRunning && count==CurrentPlayer) Display_OverrideScoreDisplay(count%RPU_NUMBER_OF_PLAYER_DISPLAYS, ((unsigned long)CurrentPlayer + 1) * 111111, DISPLAY_OVERRIDE_ANIMATION_FLUTTER);
-#endif              
+              #endif              
             }
             GameModeStage = 2;
           }
@@ -2263,7 +2259,7 @@ int ManageGameMode() {
             if (NumberOfBallsInPlay == 0) {
               Display_ClearOverride(0xFF);
               Audio.StopAllAudio();
-              //PlaySoundEffect(SOUND_EFFECT_BALL_OVER);
+              //PlaySoundEffect(SOUND_EFFECT_);
               returnState = MACHINE_STATE_COUNTDOWN_BONUS;
             }
           }
@@ -2613,27 +2609,6 @@ int ShowMatchSequence(boolean curStateChanged) {
 //  Switch Handling functions
 //
 ////////////////////////////////////////////////////////////////////////////
-/*
-  // Example lock function
-
-  void HandleLockSwitch(byte lockIndex) {
-
-  if (GameMode==GAME_MODE_UNSTRUCTURED_PLAY) {
-    // If this player has a lock available
-    if (PlayerLockStatus[CurrentPlayer] & (LOCK_1_AVAILABLE<<lockIndex)) {
-      // Lock the ball
-      LockBall(lockIndex);
-      SetGameMode(GAME_MODE_OFFER_LOCK);
-    } else {
-      if ((MachineLocks & (LOCK_1_ENGAGED<<lockIndex))==0) {
-        // Kick unlocked ball
-        RPU_PushToSolenoidStack(SOL_UPPER_BALL_EJECT, 12, true);
-      }
-    }
-  }
-  }
-
-*/
 
 int HandleSystemSwitches(int curState, byte switchHit) {
   int returnState = curState;
@@ -2702,14 +2677,6 @@ int HandleSystemSwitches(int curState, byte switchHit) {
   return returnState;
 }
 
-void HandleSpinnerProgress() {
-
-  LastSpinnerHitTime = CurrentTime;
-  CurrentScores[CurrentPlayer] += 100 * PlayfieldMultiplier;
-
-}
-
-
 void ValidateAndRegisterPlayfieldSwitch() {
   LastSwitchHitTime = CurrentTime;
   if (BallFirstSwitchHitTime == 0) BallFirstSwitchHitTime = CurrentTime;
@@ -2744,27 +2711,27 @@ void HandleGamePlaySwitches(byte switchHit) {
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_LEFT_INLANE:
-      CurrentScores[CurrentPlayer] += 40 * PlayfieldMultiplier;
+      CurrentScores[CurrentPlayer] += 600 * PlayfieldMultiplier;
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_RIGHT_INLANE:
-      CurrentScores[CurrentPlayer] += 50 * PlayfieldMultiplier;
+      CurrentScores[CurrentPlayer] += 600 * PlayfieldMultiplier;
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_LEFT_OUTLANE:
-      CurrentScores[CurrentPlayer] += 60 * PlayfieldMultiplier;
+      CurrentScores[CurrentPlayer] += 1000 * PlayfieldMultiplier;
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_RIGHT_OUTLANE:
-      CurrentScores[CurrentPlayer] += 70 * PlayfieldMultiplier;
+      CurrentScores[CurrentPlayer] += 1000 * PlayfieldMultiplier;
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_LOWER_L_TARGET:
-      CurrentScores[CurrentPlayer] += 80 * PlayfieldMultiplier;
+      CurrentScores[CurrentPlayer] += 500 * PlayfieldMultiplier;
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_LEFT_SLING:
-      CurrentScores[CurrentPlayer] += 90 * PlayfieldMultiplier;
+      CurrentScores[CurrentPlayer] += 100 * PlayfieldMultiplier;
       PlaySoundEffect(SOUND_EFFECT_LEFT_SLING);
       if (GameMode!=GAME_MODE_SKILL_SHOT) ValidateAndRegisterPlayfieldSwitch();
       break;
@@ -2775,6 +2742,7 @@ void HandleGamePlaySwitches(byte switchHit) {
       break;
     case SW_DROP_1:
       CurrentScores[CurrentPlayer] += 110 * PlayfieldMultiplier;
+      RPU_SetLampState(LAMP_SPINNER_1K, 1, 0, 0);
       PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);     
       if (GameMode!=GAME_MODE_SKILL_SHOT) ValidateAndRegisterPlayfieldSwitch();
       break;
@@ -2796,51 +2764,52 @@ void HandleGamePlaySwitches(byte switchHit) {
     case SW_SUPERSTAR:
       CurrentScores[CurrentPlayer] += 150 * PlayfieldMultiplier;
       PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_COMPLETE);
-      RPU_PushToTimedSolenoidStack(SOL_DROP_BANK_RESET, SaucerSolenoidStrength, CurrentTime + 5000, true);
+      RPU_PushToTimedSolenoidStack(SOL_DROP_BANK_RESET, BallServeSolenoidStrength, CurrentTime + 5000, true);
       break;
     case SW_RUBBER:
-      CurrentScores[CurrentPlayer] += 160 * PlayfieldMultiplier;
+      CurrentScores[CurrentPlayer] += 30 * PlayfieldMultiplier;
       PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_D:
-      CurrentScores[CurrentPlayer] += 170 * PlayfieldMultiplier;
+      CurrentScores[CurrentPlayer] += 400 * PlayfieldMultiplier;
       PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_O:
-      CurrentScores[CurrentPlayer] += 180 * PlayfieldMultiplier;
+      CurrentScores[CurrentPlayer] += 400 * PlayfieldMultiplier;
       PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_L1:
-      CurrentScores[CurrentPlayer] += 190 * PlayfieldMultiplier;
+      CurrentScores[CurrentPlayer] += 400 * PlayfieldMultiplier;
       PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_L2:
-      CurrentScores[CurrentPlayer] += 200 * PlayfieldMultiplier;
+      CurrentScores[CurrentPlayer] += 400 * PlayfieldMultiplier;
       PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_Y:
-      CurrentScores[CurrentPlayer] += 210 * PlayfieldMultiplier;
+      CurrentScores[CurrentPlayer] += 400 * PlayfieldMultiplier;
       PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_SPINNER:
-      CurrentScores[CurrentPlayer] += 220 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_SPINNER);
-      //HandleSpinnerProgress();
+      if(RPU_ReadLampState(LAMP_SPINNER_1K)){
+        CurrentScores[CurrentPlayer] += 1000 * PlayfieldMultiplier;
+        PlaySoundEffect(SOUND_EFFECT_SPINNER);
+      } else {
+        CurrentScores[CurrentPlayer] += 100 * PlayfieldMultiplier;
+        PlaySoundEffect(SOUND_EFFECT_SPINNER);
+      }
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_SAUCER:
       CurrentScores[CurrentPlayer] += 230 * PlayfieldMultiplier;
       PlaySoundEffect(SOUND_EFFECT_SPINNER);
       RPU_PushToTimedSolenoidStack(SOL_SAUCER, SaucerSolenoidStrength, CurrentTime + 1000, true);
-      
-      
-      //HandleSpinnerProgress();
       ValidateAndRegisterPlayfieldSwitch();
 
       // Saucer kitckout is now handled by debouncer

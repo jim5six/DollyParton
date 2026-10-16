@@ -1,5 +1,4 @@
 //LAMP DEFINITIONS:
-
 #define LAMP_D_TARGET                 0
 #define LAMP_O_TARGET                 1
 #define LAMP_1ST_L_TARGET             2
@@ -47,9 +46,7 @@
 #define LAMP_GANE_OVER                50
 #define LAMP_TILT                     51
 
-
-
-// These may have different switches, or they might be the same
+//Switch Definitions
 #define SW_TILT                     6
 #define SW_PLUMB_TILT               6
 #define SW_ROLL_TILT                6
@@ -84,7 +81,7 @@
 #define SW_LOWER_R_LANE             19
 #define SW_SPINNER                  16
 
-
+//Solinoid Definitions
 #define SOL_BALL_TROUGH             6
 #define SOL_KNOCKER                 5
 #define SOL_RIGHT_SLING             11
