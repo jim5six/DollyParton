@@ -1756,7 +1756,7 @@ int RunAttractMode(int curState, boolean curStateChanged) {
   byte attractPlayfieldPhase = ((CurrentTime / 5000) % 6);
 
   //ShowLampAnimation(attractPlayfieldPhase % 3, 20, CurrentTime, 18, false, false);
-  ShowLampAnimation(1, 48, CurrentTime, 18, false, false);
+  ShowLampAnimation(0, 48, CurrentTime, 18, false, false);
 
   byte switchHit;
   while ( (switchHit = RPU_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY ) {
@@ -1981,7 +1981,7 @@ int InitNewBall(bool curStateChanged) {
     // Initialize game-specific start-of-ball lights & variables
     GameModeStartTime = 0;
     GameModeEndTime = 0;
-    GameMode = GAME_MODE_UNSTRUCTURED_PLAY;
+    GameMode = GAME_MODE_SKILL_SHOT;
 
     SpecialCollected = false;
     SpecialAvailable = false;
@@ -2005,9 +2005,6 @@ int InitNewBall(bool curStateChanged) {
 
     // Reset Drop Targets
     RPU_PushToTimedSolenoidStack(SOL_DROP_BANK_RESET, BallServeSolenoidStrength, CurrentTime, true);
-
-    RPU_PushToTimedSolenoidStack(SOL_BALL_TROUGH, BallServeSolenoidStrength, CurrentTime + 1000, true);
-    LastTimeBallServed = CurrentTime + 1000;
     
     NumberOfBallsInPlay = 1;
   }
@@ -2069,17 +2066,19 @@ int ManageGameMode() {
         SetGeneralIlluminationOn(true);
       }
 
+      ShowLampAnimation(2, 144, CurrentTime, 18, false, false);
+
       // The switch handler will award the skill shot
       // (when applicable) and this mode will move
       // to unstructured play when any valid switch is
       // recorded
 
-      if (CurrentTime > (LastTimePromptPlayed + 20000)) {
-        //RPU_FireContinuousSolenoid(0x20, 30);
-        AlertPlayerUp();
-        LastTimePromptPlayed = CurrentTime;
-        Audio.OutputTracksPlaying();
-      }
+      // if (CurrentTime > (LastTimePromptPlayed + 20000)) {
+      //   //RPU_FireContinuousSolenoid(0x20, 30);
+      //   AlertPlayerUp();
+      //   LastTimePromptPlayed = CurrentTime;
+      //   Audio.OutputTracksPlaying();
+      // }
       
       // If we've seen a tilt before plunge, then
       // we can show a countdown timer here
@@ -2134,12 +2133,13 @@ int ManageGameMode() {
           Serial.write("Entering unstructured play\n");
         }
         SetGeneralIlluminationOn(true);
-        unsigned short songNum = SOUND_EFFECT_BG_JOLENE;
-        if (CurrentBallInPlay>1 && CurrentBallInPlay<5) songNum = SOUND_EFFECT_BG_COAT_COLORS + (CurrentTime%3);
-        if (CurrentBallInPlay==BallsPerGame) songNum = SOUND_EFFECT_BG_JOLENE;
-        if (Audio.GetBackgroundSong() != songNum) {
-          PlayBackgroundSong(songNum);
-        }
+        // unsigned short songNum = SOUND_EFFECT_BG_JOLENE;
+        // if (CurrentBallInPlay>1 && CurrentBallInPlay<5) songNum = SOUND_EFFECT_BG_COAT_COLORS + (CurrentTime%3);
+        // if (CurrentBallInPlay==BallsPerGame) songNum = SOUND_EFFECT_BG_JOLENE;
+        // if (Audio.GetBackgroundSong() != songNum) {
+        //   PlayBackgroundSong(songNum);
+        // }
+        PlayBackgroundSong(SOUND_EFFECT_BG_JOLENE);
         GameModeStage = 0;
         LastTimePromptPlayed = 0;
       }
@@ -2177,14 +2177,6 @@ int ManageGameMode() {
         Display_ClearOverride(0xFF);
       }
 
-      if (LastTimePopHit) {
-        if (CurrentTime < (LastTimePopHit+480) && (PopBumperProgress%10)==0) {
-          specialAnimationRunning = true;
-          byte popOutPhase = ((CurrentTime - LastTimePopHit)/20);
-          ShowLampAnimationSingleStep(4, popOutPhase);
-        }
-      }
-
       // Check to see if player has earned an extra ball lamp
       if (CurrentTime > (LastTimeAwardsChecked+1000) && ExtraBallAvailable[CurrentPlayer]==0) {
         LastTimeAwardsChecked = CurrentTime;
@@ -2201,11 +2193,10 @@ int ManageGameMode() {
   if ( !statusRunning && !specialAnimationRunning && NumTiltWarnings <= MaxTiltWarnings ) {
     // CUSTOMIZATION TODO:
     // add in any custom lamp functions here
-    ShowBonusLamps();
+    //ShowBonusLamps();
     ShowShootAgainLamp();
   }
-  //ShowPlayerLamps();
-
+  
   if (Display_UpdateDisplays(0xFF, false, (BallFirstSwitchHitTime == 0) ? true : false, (BallFirstSwitchHitTime > 0 && ((CurrentTime - Display_GetLastTimeScoreChanged()) > 2000)) ? true : false)) {
     Audio.StopSound(SOUND_EFFECT_SCORE_TICK);
     PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
@@ -2260,7 +2251,7 @@ int ManageGameMode() {
               Display_ClearOverride(0xFF);
               Audio.StopAllAudio();
               //PlaySoundEffect(SOUND_EFFECT_);
-              returnState = MACHINE_STATE_COUNTDOWN_BONUS;
+              returnState = MACHINE_STATE_BALL_OVER;
             }
           }
         }
@@ -2712,22 +2703,27 @@ void HandleGamePlaySwitches(byte switchHit) {
       break;
     case SW_LEFT_INLANE:
       CurrentScores[CurrentPlayer] += 600 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_RIGHT_INLANE:
       CurrentScores[CurrentPlayer] += 600 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_LEFT_OUTLANE:
       CurrentScores[CurrentPlayer] += 1000 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_POP_BASS);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_RIGHT_OUTLANE:
       CurrentScores[CurrentPlayer] += 1000 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_POP_BASS);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_LOWER_L_TARGET:
       CurrentScores[CurrentPlayer] += 500 * PlayfieldMultiplier;
+      PlaySoundEffect(SOUND_EFFECT_POP_BASS);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_LEFT_SLING:
@@ -2768,59 +2764,65 @@ void HandleGamePlaySwitches(byte switchHit) {
       break;
     case SW_RUBBER:
       CurrentScores[CurrentPlayer] += 30 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
+      PlaySoundEffect(SOUND_EFFECT_POP_BASS);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_D:
       CurrentScores[CurrentPlayer] += 400 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
+      PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+      RPU_SetLampState(LAMP_D_TARGET, 1, 0, 0);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_O:
       CurrentScores[CurrentPlayer] += 400 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
+      PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+      RPU_SetLampState(LAMP_O_TARGET, 1, 0, 0);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_L1:
       CurrentScores[CurrentPlayer] += 400 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
+      PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+      RPU_SetLampState(LAMP_L1_TARGET, 1, 0, 0);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_L2:
       CurrentScores[CurrentPlayer] += 400 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
+      PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+      RPU_SetLampState(LAMP_L2_TARGET, 1, 0, 0);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_Y:
       CurrentScores[CurrentPlayer] += 400 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
+      PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+      RPU_SetLampState(LAMP_Y_TARGET, 1, 0, 0);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_SPINNER:
       if(RPU_ReadLampState(LAMP_SPINNER_1K)){
         CurrentScores[CurrentPlayer] += 1000 * PlayfieldMultiplier;
         PlaySoundEffect(SOUND_EFFECT_SPINNER);
+        SpinnerProgress[CurrentPlayer] += 1;
       } else {
         CurrentScores[CurrentPlayer] += 100 * PlayfieldMultiplier;
         PlaySoundEffect(SOUND_EFFECT_SPINNER);
+        SpinnerProgress[CurrentPlayer] += 1;
       }
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_SAUCER:
-      CurrentScores[CurrentPlayer] += 230 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_SPINNER);
-      RPU_PushToTimedSolenoidStack(SOL_SAUCER, SaucerSolenoidStrength, CurrentTime + 1000, true);
-      ValidateAndRegisterPlayfieldSwitch();
-
-      // Saucer kitckout is now handled by debouncer
-      // We'll validate the PF with this switch, unless
-      // we just fired the Saucer as part of the ball search.
-      //LastTimeSaucerSeen = CurrentTime;
-      //ValidateAndRegisterPlayfieldSwitch();
+      if (GameMode!=GAME_MODE_SKILL_SHOT) {
+        CurrentScores[CurrentPlayer] += 1000 * PlayfieldMultiplier;
+        PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
+        RPU_PushToTimedSolenoidStack(SOL_SAUCER, SaucerSolenoidStrength, CurrentTime + 1000, true);
+        SetGameMode(GAME_MODE_UNSTRUCTURED_PLAY);
+      } else {
+        CurrentScores[CurrentPlayer] += 230 * PlayfieldMultiplier;
+        PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+        RPU_PushToTimedSolenoidStack(SOL_SAUCER, SaucerSolenoidStrength, CurrentTime + 1000, true);
+        ValidateAndRegisterPlayfieldSwitch();
+      }
       break;
-    }
-
-}
+  }}
 
 
 int RunGamePlayMode(int curState, boolean curStateChanged) {

@@ -1,8 +1,8 @@
 //LAMP DEFINITIONS:
-#define LAMP_D_TARGET                 0
-#define LAMP_O_TARGET                 1
-#define LAMP_1ST_L_TARGET             2
-#define LAMP_2ND_L_TARGET             3
+#define LAMP_D_TARGET                 1
+#define LAMP_O_TARGET                 0
+#define LAMP_L1_TARGET                2
+#define LAMP_L2_TARGET                3
 #define LAMP_Y_TARGET                 4
 #define LAMP_P_SAUCER                 5
 #define LAMP_A_SAUCER                 6
