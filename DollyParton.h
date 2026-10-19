@@ -1,6 +1,6 @@
 //LAMP DEFINITIONS:
-#define LAMP_D_TARGET                 1
 #define LAMP_O_TARGET                 0
+#define LAMP_D_TARGET                 1
 #define LAMP_L1_TARGET                2
 #define LAMP_L2_TARGET                3
 #define LAMP_Y_TARGET                 4
@@ -10,6 +10,7 @@
 #define LAMP_T_SAUCER                 8
 #define LAMP_O_SAUCER                 9
 #define LAMP_N_SAUCER                 10
+
 #define LAMP_5K_PARTON_SAUCER         13
 #define LAMP_1K_DOLLY_TARGET          14
 #define LAMP_SPINNER_1K               15
@@ -32,6 +33,7 @@
 #define LAMP_T_CENTER                 32
 #define LAMP_PARTON_0_CENTER          33
 #define LAMP_N_CENTER                 34
+
 #define LAMP_EB_DROP_TARGET           38
 #define LAMP_SPECIAL_DROP_TARGET      39
 #define LAMP_HEAD_SHOOT_AGAIN         40
@@ -41,55 +43,61 @@
 #define LAMP_2X_BONUS                 44
 #define LAMP_3X_BONUS                 45
 #define LAMP_5X_BONUS                 46
+
 #define LAMP_BALL_IN_PLAY             48
 #define LAMP_HSTD                     49  //  JIM - NEED TO VERIFY
 #define LAMP_GANE_OVER                50
 #define LAMP_TILT                     51
 
 //Switch Definitions
+#define SW_DROP_4                   0
+#define SW_DROP_3                   1
+#define SW_DROP_2                   2
+#define SW_DROP_1                   3
+#define SW_SUPERSTAR                4
+#define SW_CREDIT_RESET             5
 #define SW_TILT                     6
 #define SW_PLUMB_TILT               6
 #define SW_ROLL_TILT                6
-#define SW_CREDIT_RESET             5
 #define SW_OUTHOLE                  7
 #define SW_COIN_3                   8
 #define SW_COIN_1                   9
 #define SW_COIN_2                   10
+
 #define SW_SLAM                     15
-#define SW_DROP_1                   3
-#define SW_DROP_2                   2
-#define SW_DROP_3                   1
-#define SW_DROP_4                   0
-#define SW_SUPERSTAR                4
-#define SW_LEFT_SLING               36
-#define SW_RIGHT_SLING              35
-#define SW_L_POP_BUMPER             39
-#define SW_T_POP_BUMPER             37
-#define SW_B_POP_BUMPER             38
-#define SW_SAUCER                   23
-#define SW_LEFT_OUTLANE             22
-#define SW_LEFT_INLANE              21
-#define SW_RIGHT_OUTLANE            19
-#define SW_RIGHT_INLANE             20
-#define SW_RUBBER                   33
-#define SW_D                        31
-#define SW_O                        30
-#define SW_L1                       29
-#define SW_L2                       28
-#define SW_Y                        27
-#define SW_LOWER_L_TARGET           18
-#define SW_LOWER_R_LANE             19
 #define SW_SPINNER                  16
 
+#define SW_LOWER_L_TARGET           18
+#define SW_RIGHT_OUTLANE            19
+#define SW_RIGHT_INLANE             20
+#define SW_LEFT_INLANE              21
+#define SW_LEFT_OUTLANE             22
+#define SW_SAUCER                   23
+
+#define SW_Y                        27
+#define SW_L2                       28
+#define SW_L1                       29
+#define SW_O                        30
+#define SW_D                        31
+
+#define SW_RUBBER                   33
+#define SW_LOWER_R_LANE             34
+#define SW_RIGHT_SLING              35
+#define SW_LEFT_SLING               36
+#define SW_T_POP_BUMPER             37
+#define SW_B_POP_BUMPER             38
+#define SW_L_POP_BUMPER             39
+
 //Solinoid Definitions
-#define SOL_BALL_TROUGH             6
 #define SOL_KNOCKER                 5
-#define SOL_RIGHT_SLING             11
-#define SOL_LEFT_SLING              10
-#define SOL_L_POP_BUMPER            8
+#define SOL_BALL_TROUGH             6
 #define SOL_B_POP_BUMPER            7
+#define SOL_L_POP_BUMPER            8
 #define SOL_T_POP_BUMPER            9
+#define SOL_LEFT_SLING              10
+#define SOL_RIGHT_SLING             11
 #define SOL_SAUCER                  12
+
 #define SOL_DROP_BANK_RESET         14
 #define SOL_COIN_LOCKOUT            15
 
