@@ -105,34 +105,9 @@ boolean MachineStateChanged = true;
 #define SOUND_EFFECT_MATCH_SPIN               28
 #define SOUND_EFFECT_DROP_TARGET_SOUND_1      30
 #define SOUND_EFFECT_DROP_TARGET_COMPLETE     40
-//#define SOUND_EFFECT_BONUS_1                  81
-//#define SOUND_EFFECT_BONUS_2                  82
-//#define SOUND_EFFECT_BONUS_3                  83
-//#define SOUND_EFFECT_BONUS_4                  84
-//#define SOUND_EFFECT_BONUS_5                  85
-//#define SOUND_EFFECT_BONUS_6                  86
-//#define SOUND_EFFECT_BONUS_7                  87
-//#define SOUND_EFFECT_BONUS_8                  88
-//#define SOUND_EFFECT_STARTUP_1                100
-//#define SOUND_EFFECT_STARTUP_2                101
-
 #define SOUND_EFFECT_COIN_DROP_1              105
 #define SOUND_EFFECT_COIN_DROP_2              106
 #define SOUND_EFFECT_COIN_DROP_3              107
-
-#define SOUND_EFFECT_BG_JOLENE                400
-#define SOUND_EFFECT_BG_COAT_COLORS           401
-
-#define SOUND_EFFECT_VP_GAME_RULES_EASY               423
-#define SOUND_EFFECT_VP_GAME_RULES_MEDIUM             424
-#define SOUND_EFFECT_VP_GAME_RULES_HARD               425
-
-// #define SOUND_EFFECT_RALLY_MUSIC_1                    450
-// #define SOUND_EFFECT_RALLY_MUSIC_2                    451
-// #define SOUND_EFFECT_RALLY_MUSIC_3                    452
-// #define SOUND_EFFECT_RALLY_MUSIC_4                    453
-// #define SOUND_EFFECT_RALLY_MUSIC_5                    454
-
 
 // Game play status callouts
 #define SOUND_EFFECT_BALL_SAVE                300
@@ -141,12 +116,29 @@ boolean MachineStateChanged = true;
 #define SOUND_EFFECT_GAME_START               303
 #define SOUND_EFFECT_WELCOME                  304
 
+//Background music
+#define SOUND_EFFECT_BG_JOLENE                400
+#define SOUND_EFFECT_BG_COAT_COLORS           401
 
-#define SOUND_EFFECT_VP_ADD_PLAYER_1        306
-#define SOUND_EFFECT_VP_ADD_PLAYER_2        (SOUND_EFFECT_VP_ADD_PLAYER_1+1)
-#define SOUND_EFFECT_VP_ADD_PLAYER_3        (SOUND_EFFECT_VP_ADD_PLAYER_1+2)
-#define SOUND_EFFECT_VP_ADD_PLAYER_4        (SOUND_EFFECT_VP_ADD_PLAYER_1+3)
-#define SOUND_EFFECT_VP_SHOOT_AGAIN         310
+//Song Mode songs
+#define SOUND_EFFECT_JOLENE                   405
+#define SOUND_EFFECT_COAT_COLORS              406
+
+//#define SOUND_EFFECT_RALLY_MUSIC_1            450
+//#define SOUND_EFFECT_RALLY_MUSIC_2            451
+//#define SOUND_EFFECT_RALLY_MUSIC_3            452
+//#define SOUND_EFFECT_RALLY_MUSIC_4            453
+//#define SOUND_EFFECT_RALLY_MUSIC_5            454
+
+
+#define SOUND_EFFECT_VP_ADD_PLAYER_1          306
+#define SOUND_EFFECT_VP_ADD_PLAYER_2          (SOUND_EFFECT_VP_ADD_PLAYER_1+1)
+#define SOUND_EFFECT_VP_ADD_PLAYER_3          (SOUND_EFFECT_VP_ADD_PLAYER_1+2)
+#define SOUND_EFFECT_VP_ADD_PLAYER_4          (SOUND_EFFECT_VP_ADD_PLAYER_1+3)
+#define SOUND_EFFECT_VP_SHOOT_AGAIN           310
+#define SOUND_EFFECT_VP_GAME_RULES_EASY       423
+#define SOUND_EFFECT_VP_GAME_RULES_MEDIUM     424
+#define SOUND_EFFECT_VP_GAME_RULES_HARD       425
 
 #define SOUND_EFFECT_DIAG_START                   1900
 #define SOUND_EFFECT_DIAG_CREDIT_RESET_BUTTON     1900
@@ -2135,13 +2127,13 @@ int ManageGameMode() {
           Serial.write("Entering unstructured play\n");
         }
         SetGeneralIlluminationOn(true);
-        // unsigned short songNum = SOUND_EFFECT_BG_JOLENE;
-        // if (CurrentBallInPlay>1 && CurrentBallInPlay<5) songNum = SOUND_EFFECT_BG_COAT_COLORS + (CurrentTime%3);
-        // if (CurrentBallInPlay==BallsPerGame) songNum = SOUND_EFFECT_BG_JOLENE;
-        // if (Audio.GetBackgroundSong() != songNum) {
-        //   PlayBackgroundSong(songNum);
-        // }
-        PlayBackgroundSong(SOUND_EFFECT_BG_JOLENE);
+        unsigned short songNum = SOUND_EFFECT_BG_JOLENE;
+        if (CurrentBallInPlay>1 && CurrentBallInPlay<5) songNum = SOUND_EFFECT_BG_COAT_COLORS + (CurrentTime%3);
+        if (CurrentBallInPlay==BallsPerGame) songNum = SOUND_EFFECT_BG_JOLENE;
+        if (Audio.GetBackgroundSong() != songNum) {
+          PlayBackgroundSong(songNum);
+        }
+        //PlayBackgroundSong(SOUND_EFFECT_BG_JOLENE);
         GameModeStage = 0;
         LastTimePromptPlayed = 0;
       }
