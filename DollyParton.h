@@ -23,7 +23,7 @@
 #define LAMP_L_INLANE                 22
 #define LAMP_L_OUTLANE                23
 #define LAMP_D_CENTER                 24
-#define LAMP_DOLLY_0_CENTER           25
+#define LAMP_DOLLY_O_CENTER           25
 #define LAMP_1ST_L_CENTER             26
 #define LAMP_2ND_L_CENTER             27
 #define LAMP_Y_CENTER                 28

@@ -7,7 +7,7 @@ Base game: background song, more mellow than the mode songs. scoring basically a
 
 Completing "DOLLY" targets lights "D" on playfield and each additional time you get 1 more letter to complete lower DOLLY. holds over for game
 
-Top scaucer lights scoll "PARTON" landing in scaucer lights the letter for lower PARTON. holds over for game
+Top scaucer lights scroll "PARTON" landing in scaucer lights the letter for lower PARTON. holds over for game
 
 Spinner count mode, complete for score frenzy or something
 
