@@ -31,7 +31,7 @@
 #define LAMP_A_CENTER                 30
 #define LAMP_R_CENTER                 31
 #define LAMP_T_CENTER                 32
-#define LAMP_PARTON_0_CENTER          33
+#define LAMP_PARTON_O_CENTER          33
 #define LAMP_N_CENTER                 34
 
 #define LAMP_EB_DROP_TARGET           38

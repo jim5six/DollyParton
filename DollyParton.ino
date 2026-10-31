@@ -804,6 +804,20 @@ void ShowShootAgainLamp() {
   }
 }
 
+void ShowDollyTargetLamps() {
+  if (DollyTargetsComplete[CurrentPlayer] < 5 && RPU_ReadLampState(LAMP_D_TARGET) && RPU_ReadLampState(LAMP_O_TARGET) && RPU_ReadLampState(LAMP_L1_TARGET) && RPU_ReadLampState(LAMP_L2_TARGET) && RPU_ReadLampState(LAMP_Y_TARGET)) {
+    DollyTargetsComplete[CurrentPlayer] += 1;
+    RPU_SetLampState(LAMP_D_TARGET, 0, 0, 0);
+    RPU_SetLampState(LAMP_O_TARGET, 0, 0, 0);
+    RPU_SetLampState(LAMP_L1_TARGET, 0, 0, 0);
+    RPU_SetLampState(LAMP_L2_TARGET, 0, 0, 0);
+    RPU_SetLampState(LAMP_Y_TARGET, 0, 0, 0);
+    ShowDollyBonusLamps();
+  } else if (DollyTargetsComplete[CurrentPlayer] > 5) {
+    DollyTargetsComplete[CurrentPlayer] == 5;
+  }
+}
+
 void ShowDollyBonusLamps() {
   if(DollyTargetsComplete[CurrentPlayer] == 1) {
     RPU_SetLampState(LAMP_D_CENTER, true);
@@ -833,8 +847,7 @@ void ShowDollyBonusLamps() {
     RPU_SetLampState(LAMP_2ND_L_CENTER, true);
     RPU_SetLampState(LAMP_Y_CENTER, false);
     RPU_SetLampState(LAMP_1K_DOLLY_TARGET, true);
-  } else if(DollyTargetsComplete[CurrentPlayer] >= 5) {
-    DollyTargetsComplete[CurrentPlayer] = 5;
+  } else if(DollyTargetsComplete[CurrentPlayer] == 5) {
     RPU_SetLampState(LAMP_D_TARGET, 1, 0, 500);
     RPU_SetLampState(LAMP_O_TARGET, 1, 0, 500);
     RPU_SetLampState(LAMP_L1_TARGET, 1, 0, 500);
@@ -855,6 +868,21 @@ void ShowDollyBonusLamps() {
   }
 }
 
+void ShowPartonBonusLamps() {
+  if(RPU_ReadLampState(LAMP_P_SAUCER)){
+    RPU_SetLampState(LAMP_P_CENTER, true);
+  } else if(RPU_ReadLampState(LAMP_A_SAUCER)){
+    RPU_SetLampState(LAMP_A_CENTER, true);
+  } else if(RPU_ReadLampState(LAMP_R_SAUCER)){
+    RPU_SetLampState(LAMP_R_CENTER, true);
+  } else if(RPU_ReadLampState(LAMP_T_SAUCER)){
+    RPU_SetLampState(LAMP_T_CENTER, true);
+  } else if(RPU_ReadLampState(LAMP_O_SAUCER)){
+    RPU_SetLampState(LAMP_PARTON_O_CENTER, true);
+  } else if(RPU_ReadLampState(LAMP_N_SAUCER)){
+    RPU_SetLampState(LAMP_N_CENTER, true);
+  }
+}  
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1798,7 +1826,7 @@ int RunAttractMode(int curState, boolean curStateChanged) {
   byte attractPlayfieldPhase = ((CurrentTime / 5000) % 6);
 
   //ShowLampAnimation(attractPlayfieldPhase % 3, 20, CurrentTime, 18, false, false);
-  ShowLampAnimation(0, 64, CurrentTime, 23, false, false);
+  ShowLampAnimation(0, 72, CurrentTime, 23, false, false);
 
   byte switchHit;
   while ( (switchHit = RPU_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY ) {
@@ -2111,7 +2139,7 @@ int ManageGameMode() {
         SetGeneralIlluminationOn(true);
       }
 
-      ShowLampAnimation(2, 32, CurrentTime, 2, false, false);
+      ShowLampAnimation(2, 144, CurrentTime, 23, false, false);
 
       // The switch handler will award the skill shot
       // (when applicable) and this mode will move
@@ -2190,7 +2218,6 @@ int ManageGameMode() {
 
       // Display Overrides in Unstructured Play
       if (LastSpinnerHitTime) {
-
         if (CurrentTime > (LastSpinnerHitTime + 5000)) {
           LastSpinnerHitTime = 0;
         } else {
@@ -2200,26 +2227,27 @@ int ManageGameMode() {
           }
         }
         DisplaysNeedRefreshing = true;
-      } else if (PlayfieldMultiplier > 1) {
-        // Playfield X value is only reset during unstructured play
-        if (PlayfieldMultiplierTimeLeft && (CurrentTime > LastLoopTick)) {
-          unsigned long numTicks = CurrentTime - LastLoopTick;
-          if (numTicks > PlayfieldMultiplierTimeLeft) {
-            PlayfieldMultiplierTimeLeft = 0;
-            PlayfieldMultiplier = 1;
-          } else {
-            PlayfieldMultiplierTimeLeft -= numTicks;
-          }
-        } else {
-          for (byte count = 0; count < RPU_NUMBER_OF_PLAYERS_ALLOWED; count++) {
-            if (count != CurrentPlayer && !statusRunning) Display_OverrideScoreDisplay(count, PlayfieldMultiplier, DISPLAY_OVERRIDE_SYMMETRIC_BOUNCE);
-          }
-          DisplaysNeedRefreshing = true;
-        }
-      } else if (DisplaysNeedRefreshing) {
-        DisplaysNeedRefreshing = false;
-        Display_ClearOverride(0xFF);
       }
+      // } else if (PlayfieldMultiplier > 1) {
+      //   // Playfield X value is only reset during unstructured play
+      //   if (PlayfieldMultiplierTimeLeft && (CurrentTime > LastLoopTick)) {
+      //     unsigned long numTicks = CurrentTime - LastLoopTick;
+      //     if (numTicks > PlayfieldMultiplierTimeLeft) {
+      //       PlayfieldMultiplierTimeLeft = 0;
+      //       PlayfieldMultiplier = 1;
+      //     } else {
+      //       PlayfieldMultiplierTimeLeft -= numTicks;
+      //     }
+      //   } else {
+      //     for (byte count = 0; count < RPU_NUMBER_OF_PLAYERS_ALLOWED; count++) {
+      //       if (count != CurrentPlayer && !statusRunning) Display_OverrideScoreDisplay(count, PlayfieldMultiplier, DISPLAY_OVERRIDE_SYMMETRIC_BOUNCE);
+      //     }
+      //     DisplaysNeedRefreshing = true;
+      //   }
+      // } else if (DisplaysNeedRefreshing) {
+      //   DisplaysNeedRefreshing = false;
+      //   Display_ClearOverride(0xFF);
+      // }
 
       // Check to see if player has earned an extra ball lamp
       if (CurrentTime > (LastTimeAwardsChecked+1000) && ExtraBallAvailable[CurrentPlayer]==0) {
@@ -2239,7 +2267,9 @@ int ManageGameMode() {
     // add in any custom lamp functions here
     //ShowBonusLamps();
     ShowShootAgainLamp();
+    ShowDollyTargetLamps();
     ShowDollyBonusLamps();
+    ShowLampAnimation(2, 144, CurrentTime, 23, false, false);
   }
   
   if (Display_UpdateDisplays(0xFF, false, (BallFirstSwitchHitTime == 0) ? true : false, (BallFirstSwitchHitTime > 0 && ((CurrentTime - Display_GetLastTimeScoreChanged()) > 2000)) ? true : false)) {
@@ -2840,15 +2870,7 @@ void HandleGamePlaySwitches(byte switchHit) {
       }
       PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
       RPU_SetLampState(LAMP_D_TARGET, 1, 0, 0);
-      if (RPU_ReadLampState(LAMP_D_TARGET) && RPU_ReadLampState(LAMP_O_TARGET) && RPU_ReadLampState(LAMP_L1_TARGET) && RPU_ReadLampState(LAMP_L2_TARGET) && RPU_ReadLampState(LAMP_Y_TARGET)) {
-        DollyTargetsComplete[CurrentPlayer] += 1;
-        RPU_SetLampState(LAMP_D_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_O_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_L1_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_L2_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_Y_TARGET, 0, 0, 0);
-        PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_COMPLETE);
-      }
+      ShowDollyTargetLamps();
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_O:
@@ -2859,15 +2881,8 @@ void HandleGamePlaySwitches(byte switchHit) {
       }
       PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
       RPU_SetLampState(LAMP_O_TARGET, 1, 0, 0);
-      if (RPU_ReadLampState(LAMP_D_TARGET) && RPU_ReadLampState(LAMP_O_TARGET) && RPU_ReadLampState(LAMP_L1_TARGET) && RPU_ReadLampState(LAMP_L2_TARGET) && RPU_ReadLampState(LAMP_Y_TARGET)) {
-        DollyTargetsComplete[CurrentPlayer] += 1;
-        RPU_SetLampState(LAMP_D_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_O_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_L1_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_L2_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_Y_TARGET, 0, 0, 0);
-        PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_COMPLETE);
-      }ValidateAndRegisterPlayfieldSwitch();
+      ShowDollyTargetLamps();
+      ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_L1:
       if(RPU_ReadLampState(LAMP_1K_DOLLY_TARGET)){        
@@ -2877,15 +2892,8 @@ void HandleGamePlaySwitches(byte switchHit) {
       }
       PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
       RPU_SetLampState(LAMP_L1_TARGET, 1, 0, 0);
-      if (RPU_ReadLampState(LAMP_D_TARGET) && RPU_ReadLampState(LAMP_O_TARGET) && RPU_ReadLampState(LAMP_L1_TARGET) && RPU_ReadLampState(LAMP_L2_TARGET) && RPU_ReadLampState(LAMP_Y_TARGET)) {
-        DollyTargetsComplete[CurrentPlayer] += 1;
-        RPU_SetLampState(LAMP_D_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_O_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_L1_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_L2_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_Y_TARGET, 0, 0, 0);
-        PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_COMPLETE);
-      }ValidateAndRegisterPlayfieldSwitch();
+      ShowDollyTargetLamps();
+      ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_L2:
       if(RPU_ReadLampState(LAMP_1K_DOLLY_TARGET)){        
@@ -2895,15 +2903,7 @@ void HandleGamePlaySwitches(byte switchHit) {
       }
       PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
       RPU_SetLampState(LAMP_L2_TARGET, 1, 0, 0);
-      if (RPU_ReadLampState(LAMP_D_TARGET) && RPU_ReadLampState(LAMP_O_TARGET) && RPU_ReadLampState(LAMP_L1_TARGET) && RPU_ReadLampState(LAMP_L2_TARGET) && RPU_ReadLampState(LAMP_Y_TARGET)) {
-        DollyTargetsComplete[CurrentPlayer] += 1;
-        RPU_SetLampState(LAMP_D_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_O_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_L1_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_L2_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_Y_TARGET, 0, 0, 0);
-        PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_COMPLETE);
-      }
+      ShowDollyTargetLamps();
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_Y:
@@ -2914,15 +2914,7 @@ void HandleGamePlaySwitches(byte switchHit) {
       }
       PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
       RPU_SetLampState(LAMP_Y_TARGET, 1, 0, 0);
-      if (RPU_ReadLampState(LAMP_D_TARGET) && RPU_ReadLampState(LAMP_O_TARGET) && RPU_ReadLampState(LAMP_L1_TARGET) && RPU_ReadLampState(LAMP_L2_TARGET) && RPU_ReadLampState(LAMP_Y_TARGET)) {
-        DollyTargetsComplete[CurrentPlayer] += 1;
-        RPU_SetLampState(LAMP_D_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_O_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_L1_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_L2_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_Y_TARGET, 0, 0, 0);
-        PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_COMPLETE);
-      }
+      ShowDollyTargetLamps();
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_SPINNER:
@@ -2941,6 +2933,7 @@ void HandleGamePlaySwitches(byte switchHit) {
       if (GameMode!=GAME_MODE_SKILL_SHOT) {
         CurrentScores[CurrentPlayer] += 1000 * PlayfieldMultiplier;
         PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+        ShowPartonBonusLamps();
         RPU_PushToTimedSolenoidStack(SOL_SAUCER, SaucerSolenoidStrength, CurrentTime + 1000, true);
         ValidateAndRegisterPlayfieldSwitch();
       } else {
@@ -2951,7 +2944,8 @@ void HandleGamePlaySwitches(byte switchHit) {
         SetGameMode(GAME_MODE_UNSTRUCTURED_PLAY);
       }
       break;
-  }}
+  }
+}
 
 
 int RunGamePlayMode(int curState, boolean curStateChanged) {
