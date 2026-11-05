@@ -2206,9 +2206,9 @@ int ManageGameMode() {
           Serial.write("Entering unstructured play\n");
         }
         SetGeneralIlluminationOn(true);
-        unsigned short songNum = SOUND_EFFECT_BG_JOLENE;
-        if (CurrentBallInPlay>1 && CurrentBallInPlay<5) songNum = SOUND_EFFECT_BG_COAT_COLORS + (CurrentTime%3);
-        if (CurrentBallInPlay==BallsPerGame) songNum = SOUND_EFFECT_BG_JOLENE;
+        unsigned short songNum = SOUND_EFFECT_JOLENE;
+        if (CurrentBallInPlay>1 && CurrentBallInPlay<5) songNum = SOUND_EFFECT_COAT_COLORS + (CurrentTime%3);
+        if (CurrentBallInPlay==BallsPerGame) songNum = SOUND_EFFECT_JOLENE;
         if (Audio.GetBackgroundSong() != songNum) {
           PlayBackgroundSong(songNum);
         }
