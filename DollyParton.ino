@@ -859,6 +859,7 @@ void ShowDollyBonusLamps() {
     RPU_SetLampState(LAMP_2ND_L_CENTER, 1, 0, 500);
     RPU_SetLampState(LAMP_Y_CENTER, 1, 0, 500);
     RPU_SetLampState(LAMP_1K_DOLLY_TARGET, true);
+    RPU_SetLampState(LAMP_44K_BONUS, true);
   } else {
     RPU_SetLampState(LAMP_D_CENTER, false);
     RPU_SetLampState(LAMP_DOLLY_O_CENTER, false);
@@ -868,8 +869,10 @@ void ShowDollyBonusLamps() {
   }
 }
 
-void ShowPartonBonusLamps() {
-  if(RPU_ReadLampState(LAMP_P_SAUCER)){
+void LightPartonBonusLamps() {
+  if(RPU_ReadLampState(LAMP_P_SAUCER) && RPU_ReadLampState(LAMP_A_SAUCER) && RPU_ReadLampState(LAMP_R_SAUCER) && RPU_ReadLampState(LAMP_T_SAUCER) && RPU_ReadLampState(LAMP_O_SAUCER) && RPU_ReadLampState(LAMP_N_SAUCER)){
+    CurrentScores[CurrentPlayer] += 50000 * PlayfieldMultiplier;
+  } else if(RPU_ReadLampState(LAMP_P_SAUCER)){
     RPU_SetLampState(LAMP_P_CENTER, true);
   } else if(RPU_ReadLampState(LAMP_A_SAUCER)){
     RPU_SetLampState(LAMP_A_CENTER, true);
@@ -882,7 +885,13 @@ void ShowPartonBonusLamps() {
   } else if(RPU_ReadLampState(LAMP_N_SAUCER)){
     RPU_SetLampState(LAMP_N_CENTER, true);
   }
-}  
+}
+
+void ShowPartonBonusLamps() {
+  if(RPU_ReadLampState(LAMP_P_SAUCER) && RPU_ReadLampState(LAMP_A_SAUCER) && RPU_ReadLampState(LAMP_R_SAUCER) && RPU_ReadLampState(LAMP_T_SAUCER) && RPU_ReadLampState(LAMP_O_SAUCER) && RPU_ReadLampState(LAMP_N_SAUCER)){
+    RPU_SetLampState(LAMP_22K_BONUS, true);
+  }
+}
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -2047,6 +2056,13 @@ int InitNewBall(bool curStateChanged) {
       RPU_SetLampState(LAMP_SHOOT_AGAIN, 1, 0, 500);
     }
 
+  unsigned short songNum = SOUND_EFFECT_BG_JOLENE;
+    if (CurrentBallInPlay == 2) songNum = SOUND_EFFECT_BG_COAT_COLORS;
+    if (CurrentBallInPlay == 3) songNum = SOUND_EFFECT_BG_JOLENE;
+    if (Audio.GetBackgroundSong() != songNum) {
+      PlayBackgroundSong(songNum);
+    }
+    
     BallSaveUsed = false;
     BallTimeInTrough = 0;
     NumTiltWarnings = 0;
@@ -2206,12 +2222,6 @@ int ManageGameMode() {
           Serial.write("Entering unstructured play\n");
         }
         SetGeneralIlluminationOn(true);
-        unsigned short songNum = SOUND_EFFECT_JOLENE;
-        if (CurrentBallInPlay>1 && CurrentBallInPlay<5) songNum = SOUND_EFFECT_COAT_COLORS + (CurrentTime%3);
-        if (CurrentBallInPlay==BallsPerGame) songNum = SOUND_EFFECT_JOLENE;
-        if (Audio.GetBackgroundSong() != songNum) {
-          PlayBackgroundSong(songNum);
-        }
         GameModeStage = 0;
         LastTimePromptPlayed = 0;
       }
@@ -2269,6 +2279,7 @@ int ManageGameMode() {
     ShowShootAgainLamp();
     ShowDollyTargetLamps();
     ShowDollyBonusLamps();
+    ShowPartonBonusLamps();
     ShowLampAnimation(2, 144, CurrentTime, 23, false, false);
   }
   
@@ -2933,6 +2944,7 @@ void HandleGamePlaySwitches(byte switchHit) {
       if (GameMode!=GAME_MODE_SKILL_SHOT) {
         CurrentScores[CurrentPlayer] += 1000 * PlayfieldMultiplier;
         PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+        LightPartonBonusLamps();
         ShowPartonBonusLamps();
         RPU_PushToTimedSolenoidStack(SOL_SAUCER, SaucerSolenoidStrength, CurrentTime + 1000, true);
         ValidateAndRegisterPlayfieldSwitch();
@@ -2946,7 +2958,6 @@ void HandleGamePlaySwitches(byte switchHit) {
       break;
   }
 }
-
 
 int RunGamePlayMode(int curState, boolean curStateChanged) {
   int returnState = curState;
