@@ -1835,7 +1835,7 @@ int RunAttractMode(int curState, boolean curStateChanged) {
   byte attractPlayfieldPhase = ((CurrentTime / 5000) % 6);
 
   //ShowLampAnimation(attractPlayfieldPhase % 3, 20, CurrentTime, 18, false, false);
-  ShowLampAnimation(0, 72, CurrentTime, 23, false, false);
+  ShowLampAnimation(1, 72, CurrentTime, 23, false, false);
 
   byte switchHit;
   while ( (switchHit = RPU_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY ) {
@@ -2852,6 +2852,8 @@ void HandleGamePlaySwitches(byte switchHit) {
     case SW_DROP_2:
       CurrentScores[CurrentPlayer] += 500 * PlayfieldMultiplier;
       PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
+      RPU_SetLampState(LAMP_L_INLANE, 1, 0, 0);
+      RPU_SetLampState(LAMP_R_INLANE, 1, 0, 0);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_DROP_3:
