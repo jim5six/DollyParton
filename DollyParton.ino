@@ -2046,8 +2046,8 @@ int InitNewBall(bool curStateChanged) {
       if (CurrentNumPlayers > 1 && (CurrentBallInPlay != 1 || CurrentPlayer != 0) && !SamePlayerShootsAgain) AlertPlayerUp();
         SamePlayerShootsAgain = false;
 
-    // RPU_SetDisplayBallInPlay(CurrentBallInPlay);
-    // RPU_SetLampState(LAMP_TILT, 0);
+    RPU_SetDisplayBallInPlay(CurrentBallInPlay);
+    RPU_SetLampState(LAMP_TILT, 0);
     for (byte count = 0; count < 4; count++) {
       RPU_SetDisplayBlank(count, 0);
      }
@@ -2490,7 +2490,7 @@ void CheckHighScores() {
 
 
 unsigned long MatchSequenceStartTime = 0;
-unsigned long MatchDelay = 150;
+unsigned long MatchDelay = 1500;
 byte MatchDigit = 0;
 byte NumMatchSpins = 0;
 byte ScoreMatches = 0;
@@ -2591,7 +2591,6 @@ int ShowMatchSequence(boolean curStateChanged) {
     if (CurrentTime > (MatchSequenceStartTime + MatchDelay)) {
       MatchDigit += 1;
       if (MatchDigit > 9) MatchDigit = 0;
-      //PlaySoundEffect(10+(MatchDigit%2));
       PlaySoundEffect(SOUND_EFFECT_MATCH_SPIN);
       RPU_SetDisplayBallInPlay((int)MatchDigit * 10);
       MatchDelay += 50 + 4 * NumMatchSpins;
