@@ -288,10 +288,6 @@ unsigned long LastTimeSaucerSeen;
 /**************************************** 
 Custom ruleset types and variables
 */
-struct BallState
-{
-    SongMode ActiveSong = SONG_MODE_NONE;
-}
 
 enum SongMode
 {
@@ -302,31 +298,36 @@ enum SongMode
     SONG_MODE_IM_GONE,
     SONG_MODE_COUNT,
     SONG_MODE_NONE,
-}
+};
 
 enum DollyLetters
 {
-    D,
-    O,
-    L1,
-    L2,
-    Y
-}
+    DOLLY_D,
+    DOLLY_O,
+    DOLLY_L1,
+    DOLLY_L2,
+    DOLLY_Y
+};
 
 enum PartonLetters
 {
-    P,
-    A,
-    R,
-    T,
-    O,
-    N
-}
+    PARTON_P,
+    PARTON_A,
+    PARTON_R,
+    PARTON_T,
+    PARTON_O,
+    PARTON_N
+};
+
+struct BallState
+{
+    SongMode ActiveSong = SONG_MODE_NONE;
+};
 
 struct PlayerState
 {
     SongMode ModesPlayed [SONG_MODE_COUNT];
-}
+};
 
 /*------------Custom Game Code Functions---------------*/
 
