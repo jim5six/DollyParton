@@ -2512,7 +2512,8 @@ int ManageGameMode()
                 {
 
                     // This code flutters the player up during skill shot to let them know
-
+                    // TODO: Decide if we want this. Commented out because it's kinda weird.
+/*
                     for (byte count = 0; count < RPU_NUMBER_OF_PLAYERS_ALLOWED; count++)
                     {
 #ifdef RPU_OS_USE_7_DIGIT_DISPLAYS
@@ -2522,6 +2523,7 @@ int ManageGameMode()
                         if (!statusRunning && count == CurrentPlayer)
                             Display_OverrideScoreDisplay(count % RPU_NUMBER_OF_PLAYER_DISPLAYS, ((unsigned long)CurrentPlayer + 1) * 111111, DISPLAY_OVERRIDE_ANIMATION_FLUTTER);
 #endif
+*/
                     }
                     GameModeStage = 2;
                 }
