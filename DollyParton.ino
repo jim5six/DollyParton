@@ -1835,7 +1835,7 @@ int RunAttractMode(int curState, boolean curStateChanged) {
   byte attractPlayfieldPhase = ((CurrentTime / 5000) % 6);
 
   //ShowLampAnimation(attractPlayfieldPhase % 3, 20, CurrentTime, 18, false, false);
-  ShowLampAnimation(1, 72, CurrentTime, 23, false, false);
+  ShowLampAnimation(0, 72, CurrentTime, 23, false, false);
 
   byte switchHit;
   while ( (switchHit = RPU_PullFirstFromSwitchStack()) != SWITCH_STACK_EMPTY ) {
