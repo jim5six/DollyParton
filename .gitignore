@@ -1,2 +1,4 @@
 ## Ignore VPX conversion folder
 build/
+*.elf
+*.hex
