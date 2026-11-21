@@ -2523,8 +2523,8 @@ int ManageGameMode()
                         if (!statusRunning && count == CurrentPlayer)
                             Display_OverrideScoreDisplay(count % RPU_NUMBER_OF_PLAYER_DISPLAYS, ((unsigned long)CurrentPlayer + 1) * 111111, DISPLAY_OVERRIDE_ANIMATION_FLUTTER);
 #endif
-*/
                     }
+*/
                     GameModeStage = 2;
                 }
             }
