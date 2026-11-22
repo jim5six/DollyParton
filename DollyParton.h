@@ -1,3 +1,6 @@
+#ifndef DOLLY_PARTON_H
+#define DOLLY_PARTON_H
+
 //LAMP DEFINITIONS:
 #define LAMP_D_TARGET                 0
 #define LAMP_O_TARGET                 1
@@ -101,19 +104,4 @@
 #define SOL_DROP_BANK_RESET         14
 #define SOL_COIN_LOCKOUT            15
 
-// These SolenoidAssociatedSwitches are only
-// used for Bally/Stern. On Williams, the "immediate solenoids"
-// are activated in hardware so they don't need this
-// code
-#if (RPU_MPU_ARCHITECTURE<10)
-#define NUM_SWITCHES_WITH_TRIGGERS          5 // total number of solenoid/switch pairs
-#define NUM_PRIORITY_SWITCHES_WITH_TRIGGERS 5 // This number should match the define above
-
-struct PlayfieldAndCabinetSwitch SolenoidAssociatedSwitches[] = {
-  { SW_RIGHT_SLING, SOL_RIGHT_SLING, 4},
-  { SW_LEFT_SLING, SOL_LEFT_SLING, 4},
-  { SW_L_POP_BUMPER, SOL_L_POP_BUMPER, 4},
-  { SW_T_POP_BUMPER, SOL_T_POP_BUMPER, 4},
-  { SW_B_POP_BUMPER, SOL_B_POP_BUMPER, 4}
-};
 #endif

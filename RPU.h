@@ -21,6 +21,12 @@
 
 #ifndef RPU_OS_H
 
+#include <stdint.h>
+#include <stddef.h>
+
+typedef uint8_t byte;
+typedef bool boolean;
+
 #define RPU_OS_MAJOR_VERSION  5
 #define RPU_OS_MINOR_VERSION  15
 
