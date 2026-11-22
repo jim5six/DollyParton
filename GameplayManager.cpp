@@ -61,6 +61,7 @@ void GameplayManager::EndBallSave()
 void GameplayManager::ShowShootAgainLamp(uint32_t currentTime)
 {       
 
+    /*
     if ((ballFirstSwitchHitTime == 0 && ballSaveDurationMs) || (ballSaveEndTime && currentTime < ballSaveEndTime))
     {
         uint32_t msRemaining = 5000;
@@ -72,6 +73,10 @@ void GameplayManager::ShowShootAgainLamp(uint32_t currentTime)
     {
         RPU_SetLampState(LAMP_SHOOT_AGAIN, samePlayerShootsAgain);
     }
+
+    */
+
+    RPU_SetLampState(LAMP_2X_BONUS, 1, 0, 500);
 }
 
 void GameplayManager::ShowDollyTargetLamps()

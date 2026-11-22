@@ -2425,8 +2425,8 @@ int ManageGameMode()
                     if (GameManager.BallSaveIsActive(CurrentTime))
                     {
                         RPU_PushToTimedSolenoidStack(SOL_BALL_TROUGH, BallServeSolenoidStrength, CurrentTime + 100);
+                        QueueNotification(SOUND_EFFECT_BALL_SAVE, 10);
 
-                        RPU_SetLampState(LAMP_SHOOT_AGAIN, 0);
                         BallTimeInTrough = CurrentTime;
                         returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
                     }
