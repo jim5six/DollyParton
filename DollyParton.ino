@@ -15,6 +15,8 @@
 #include "DisplayHandler.h"
 #include "LampAnimations.h"
 #include "TimerManager.h"
+#include "GameplayManager.h"
+#include "PlayerProgress.h"
 #ifdef RPU_OS_USE_ACCESSORY_LAMP_BOARD
 #include "ALB-Communication.h"
 #endif
