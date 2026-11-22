@@ -215,6 +215,8 @@ byte CPCSelection[3];
 AudioHandler Audio;
 OperatorMenus Menus;
 
+PlayerProgressManager &PlayerProgress = PlayerProgressManager::Instance();
+
 #ifdef RPU_OS_USE_ACCESSORY_LAMP_BOARD
 AccessoryLampBoard TopperALB;
 #endif

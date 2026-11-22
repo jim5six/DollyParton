@@ -10,10 +10,6 @@ GameplayManager::GameplayManager()
 {
 }
 
-void GameplayManager::ResetGame()
-{
-}
-
 void GameplayManager::ResetForBall(uint32_t currentTime)
 {
     (void)currentTime;

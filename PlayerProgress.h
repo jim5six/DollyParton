@@ -11,7 +11,7 @@
  * This class manages the holdover progress of each player in the game, including score, bonus, and letter collection for Dolly and Parton.
  */
 
-class PlayerProgress {
+class PlayerProgressManager {
 public:
     enum DollyLetter
     {
@@ -34,7 +34,7 @@ public:
         PARTON_LETTERS_COUNT
     };
 
-    static PlayerProgress &Instance();
+    static PlayerProgressManager &Instance();
 
     void ResetGame();
     void ResetForBall(uint8_t playerNumber);
@@ -51,9 +51,9 @@ public:
     void SpotPartonLetter(uint8_t playerNumber, PartonLetter letter);
 
 private:
-    PlayerProgress();
-    PlayerProgress(const PlayerProgress &);
-    PlayerProgress &operator=(const PlayerProgress &);
+    PlayerProgressManager();
+    PlayerProgressManager(const PlayerProgressManager &);
+    PlayerProgressManager &operator=(const PlayerProgressManager &);
 
     uint32_t score[PLAYER_PROGRESS_MAX_PLAYERS];
     uint8_t bonus[PLAYER_PROGRESS_MAX_PLAYERS];

@@ -1,17 +1,17 @@
 #include "PlayerProgress.h"
 
-PlayerProgress &PlayerProgress::Instance()
+PlayerProgressManager &PlayerProgressManager::Instance()
 {
-    static PlayerProgress instance;
+    static PlayerProgressManager instance;
     return instance;
 }
 
-PlayerProgress::PlayerProgress()
+PlayerProgressManager::PlayerProgressManager()
 {
-    ResetGame();
+    
 }
 
-void PlayerProgress::ResetGame()
+void PlayerProgressManager::ResetGame()
 {
     for (uint8_t player = 0; player < PLAYER_PROGRESS_MAX_PLAYERS; ++player)
     {
@@ -32,7 +32,7 @@ void PlayerProgress::ResetGame()
     }
 }
 
-void PlayerProgress::ResetForBall(uint8_t playerNumber)
+void PlayerProgressManager::ResetForBall(uint8_t playerNumber)
 {
     if (playerNumber >= PLAYER_PROGRESS_MAX_PLAYERS)
         return;
@@ -43,7 +43,7 @@ void PlayerProgress::ResetForBall(uint8_t playerNumber)
     modeProgress[playerNumber] = 0;
 }
 
-uint32_t PlayerProgress::GetScore(uint8_t playerNumber) const
+uint32_t PlayerProgressManager::GetScore(uint8_t playerNumber) const
 {
     if (playerNumber >= PLAYER_PROGRESS_MAX_PLAYERS)
         return 0;
@@ -51,19 +51,19 @@ uint32_t PlayerProgress::GetScore(uint8_t playerNumber) const
     return score[playerNumber];
 }
 
-void PlayerProgress::SetScore(uint8_t playerNumber, uint32_t value)
+void PlayerProgressManager::SetScore(uint8_t playerNumber, uint32_t value)
 {
     if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS)
         score[playerNumber] = value;
 }
 
-void PlayerProgress::AddScore(uint8_t playerNumber, uint32_t value)
+void PlayerProgressManager::AddScore(uint8_t playerNumber, uint32_t value)
 {
     if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS)
         score[playerNumber] += value;
 }
 
-uint8_t PlayerProgress::GetBonus(uint8_t playerNumber) const
+uint8_t PlayerProgressManager::GetBonus(uint8_t playerNumber) const
 {
     if (playerNumber >= PLAYER_PROGRESS_MAX_PLAYERS)
         return 0;
@@ -71,25 +71,25 @@ uint8_t PlayerProgress::GetBonus(uint8_t playerNumber) const
     return bonus[playerNumber];
 }
 
-void PlayerProgress::SetBonus(uint8_t playerNumber, uint8_t bonusToAdd)
+void PlayerProgressManager::SetBonus(uint8_t playerNumber, uint8_t bonusToAdd)
 {
     if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS)
         bonus[playerNumber] = bonusToAdd;
 }
 
-void PlayerProgress::AddBonus(uint8_t playerNumber, uint8_t bonustoAdd)
+void PlayerProgressManager::AddBonus(uint8_t playerNumber, uint8_t bonustoAdd)
 {
     if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS)
         bonus[playerNumber] += bonustoAdd;
 }
 
-void PlayerProgress::SpotDollyLetter(uint8_t playerNumber, DollyLetter letter)
+void PlayerProgressManager::SpotDollyLetter(uint8_t playerNumber, DollyLetter letter)
 {
     if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS && letter < DOLLY_LETTERS_COUNT)
         DollyLettersProgress[playerNumber][letter] = true;
 }
 
-void PlayerProgress::SpotPartonLetter(uint8_t playerNumber, PartonLetter letter)
+void PlayerProgressManager::SpotPartonLetter(uint8_t playerNumber, PartonLetter letter)
 {
     if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS && letter < PARTON_LETTERS_COUNT)
         PartonLettersProgress[playerNumber][letter] = true;
