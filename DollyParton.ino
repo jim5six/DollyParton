@@ -288,56 +288,6 @@ unsigned long LastTimeSaucerSeen;
 #define DROP_TARGET_RESET_STRENGTH 10
 #define KNOCKER_SOLENOID_STRENGTH 5
 
-/**************************************** 
-Custom ruleset types and variables
-*/
-
-enum SongMode
-{
-    SONG_MODE_JOLENE = 0,
-    SONG_MODE9_TO_5,
-    SONG_MODE_COAT_OF_MANY_COLORS,
-    SONG_MODE_BABY_IM_BURNIN,
-    SONG_MODE_IM_GONE,
-    SONG_MODE_COUNT,
-    SONG_MODE_NONE,
-};
-
-enum DollyLetters
-{
-    DOLLY_D,
-    DOLLY_O,
-    DOLLY_L1,
-    DOLLY_L2,
-    DOLLY_Y
-};
-
-enum PartonLetters
-{
-    PARTON_P,
-    PARTON_A,
-    PARTON_R,
-    PARTON_T,
-    PARTON_O,
-    PARTON_N
-};
-
-struct BallState
-{
-    SongMode ActiveSong = SONG_MODE_NONE;
-};
-
-struct PlayerState
-{
-    SongMode ModesPlayed [SONG_MODE_COUNT];
-};
-
-/*------------Custom Game Code Functions---------------*/
-
-
-
-
-
 
 /*----------------General Functions-------------------*/
 

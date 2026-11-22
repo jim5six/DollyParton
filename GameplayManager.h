@@ -9,7 +9,7 @@ public:
 
     void ResetGame();
     void ResetForBall(uint32_t currentTime);
-    int ManageGameMode(int currentState, uint32_t currentTime);
+    bool ManageGameMode(int currentState, uint32_t currentTime);
 
 private:
     GameplayManager();

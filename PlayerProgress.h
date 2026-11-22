@@ -7,8 +7,33 @@
 #define PLAYER_PROGRESS_MAX_PLAYERS 4
 #endif
 
+/**
+ * This class manages the holdover progress of each player in the game, including score, bonus, and letter collection for Dolly and Parton.
+ */
+
 class PlayerProgress {
 public:
+    enum DollyLetter
+    {
+        DOLLY_D,
+        DOLLY_O,
+        DOLLY_L1,
+        DOLLY_L2,
+        DOLLY_Y,
+        DOLLY_LETTERS_COUNT
+    };
+
+    enum PartonLetter
+    {
+        PARTON_P,
+        PARTON_A,
+        PARTON_R,
+        PARTON_T,
+        PARTON_O,
+        PARTON_N,
+        PARTON_LETTERS_COUNT
+    };
+
     static PlayerProgress &Instance();
 
     void ResetGame();
@@ -19,24 +44,24 @@ public:
     void AddScore(uint8_t playerNumber, uint32_t points);
 
     uint8_t GetBonus(uint8_t playerNumber) const;
-    void SetBonus(uint8_t playerNumber, uint8_t bonus);
-    void AddBonus(uint8_t playerNumber, uint8_t bonus);
+    void SetBonus(uint8_t playerNumber, uint8_t bonustoAdd);
+    void AddBonus(uint8_t playerNumber, uint8_t bonustoAdd);
 
-    uint8_t GetBonusMultiplier(uint8_t playerNumber) const;
-    void SetBonusMultiplier(uint8_t playerNumber, uint8_t multiplier);
-
-    uint8_t GetModeProgress(uint8_t playerNumber) const;
-    void SetModeProgress(uint8_t playerNumber, uint8_t progress);
+    void SpotDollyLetter(uint8_t playerNumber, DollyLetter letter);
+    void SpotPartonLetter(uint8_t playerNumber, PartonLetter letter);
 
 private:
     PlayerProgress();
     PlayerProgress(const PlayerProgress &);
     PlayerProgress &operator=(const PlayerProgress &);
 
-    uint32_t scores[PLAYER_PROGRESS_MAX_PLAYERS];
-    uint8_t bonuses[PLAYER_PROGRESS_MAX_PLAYERS];
-    uint8_t bonusMultipliers[PLAYER_PROGRESS_MAX_PLAYERS];
+    uint32_t score[PLAYER_PROGRESS_MAX_PLAYERS];
+    uint8_t bonus[PLAYER_PROGRESS_MAX_PLAYERS];
+    uint8_t bonusMultiplier[PLAYER_PROGRESS_MAX_PLAYERS];
     uint8_t modeProgress[PLAYER_PROGRESS_MAX_PLAYERS];
+
+    bool DollyLettersProgress[PLAYER_PROGRESS_MAX_PLAYERS][DOLLY_LETTERS_COUNT];
+    bool PartonLettersProgress[PLAYER_PROGRESS_MAX_PLAYERS][PARTON_LETTERS_COUNT];
 };
 
 #endif

@@ -15,10 +15,20 @@ void PlayerProgress::ResetGame()
 {
     for (uint8_t player = 0; player < PLAYER_PROGRESS_MAX_PLAYERS; ++player)
     {
-        scores[player] = 0;
-        bonuses[player] = 0;
-        bonusMultipliers[player] = 1;
+        score[player] = 0;
+        bonus[player] = 0;
+        bonusMultiplier[player] = 1;
         modeProgress[player] = 0;
+
+        //Reset dolly and parton letters progress
+        for (uint8_t letter = 0; letter < DOLLY_LETTERS_COUNT; ++letter)
+        {
+            DollyLettersProgress[player][letter] = 0;
+        }
+        for (uint8_t letter = 0; letter < PARTON_LETTERS_COUNT; ++letter)
+        {
+            PartonLettersProgress[player][letter] = 0;
+        }
     }
 }
 
@@ -27,8 +37,9 @@ void PlayerProgress::ResetForBall(uint8_t playerNumber)
     if (playerNumber >= PLAYER_PROGRESS_MAX_PLAYERS)
         return;
 
-    bonuses[playerNumber] = 0;
-    bonusMultipliers[playerNumber] = 1;
+    // TODO: Bonus hold?
+    bonus[playerNumber] = 0;
+    bonusMultiplier[playerNumber] = 1;
     modeProgress[playerNumber] = 0;
 }
 
@@ -37,19 +48,19 @@ uint32_t PlayerProgress::GetScore(uint8_t playerNumber) const
     if (playerNumber >= PLAYER_PROGRESS_MAX_PLAYERS)
         return 0;
 
-    return scores[playerNumber];
+    return score[playerNumber];
 }
 
-void PlayerProgress::SetScore(uint8_t playerNumber, uint32_t score)
+void PlayerProgress::SetScore(uint8_t playerNumber, uint32_t value)
 {
     if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS)
-        scores[playerNumber] = score;
+        score[playerNumber] = value;
 }
 
-void PlayerProgress::AddScore(uint8_t playerNumber, uint32_t points)
+void PlayerProgress::AddScore(uint8_t playerNumber, uint32_t value)
 {
     if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS)
-        scores[playerNumber] += points;
+        score[playerNumber] += value;
 }
 
 uint8_t PlayerProgress::GetBonus(uint8_t playerNumber) const
@@ -57,45 +68,29 @@ uint8_t PlayerProgress::GetBonus(uint8_t playerNumber) const
     if (playerNumber >= PLAYER_PROGRESS_MAX_PLAYERS)
         return 0;
 
-    return bonuses[playerNumber];
+    return bonus[playerNumber];
 }
 
-void PlayerProgress::SetBonus(uint8_t playerNumber, uint8_t bonus)
+void PlayerProgress::SetBonus(uint8_t playerNumber, uint8_t bonusToAdd)
 {
     if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS)
-        bonuses[playerNumber] = bonus;
+        bonus[playerNumber] = bonusToAdd;
 }
 
-void PlayerProgress::AddBonus(uint8_t playerNumber, uint8_t bonus)
+void PlayerProgress::AddBonus(uint8_t playerNumber, uint8_t bonustoAdd)
 {
     if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS)
-        bonuses[playerNumber] += bonus;
+        bonus[playerNumber] += bonustoAdd;
 }
 
-uint8_t PlayerProgress::GetBonusMultiplier(uint8_t playerNumber) const
+void PlayerProgress::SpotDollyLetter(uint8_t playerNumber, DollyLetter letter)
 {
-    if (playerNumber >= PLAYER_PROGRESS_MAX_PLAYERS)
-        return 0;
-
-    return bonusMultipliers[playerNumber];
+    if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS && letter < DOLLY_LETTERS_COUNT)
+        DollyLettersProgress[playerNumber][letter] = true;
 }
 
-void PlayerProgress::SetBonusMultiplier(uint8_t playerNumber, uint8_t multiplier)
+void PlayerProgress::SpotPartonLetter(uint8_t playerNumber, PartonLetter letter)
 {
-    if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS)
-        bonusMultipliers[playerNumber] = multiplier;
-}
-
-uint8_t PlayerProgress::GetModeProgress(uint8_t playerNumber) const
-{
-    if (playerNumber >= PLAYER_PROGRESS_MAX_PLAYERS)
-        return 0;
-
-    return modeProgress[playerNumber];
-}
-
-void PlayerProgress::SetModeProgress(uint8_t playerNumber, uint8_t progress)
-{
-    if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS)
-        modeProgress[playerNumber] = progress;
+    if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS && letter < PARTON_LETTERS_COUNT)
+        PartonLettersProgress[playerNumber][letter] = true;
 }
