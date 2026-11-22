@@ -4,16 +4,20 @@
 #include <stdint.h>
 #include "PlayerProgress.h"
 
+#define BALL_SAVE_GRACE_PERIOD 2000
+
 class GameplayManager {
 public:
     static GameplayManager &Instance();
 
     void ResetForBall(uint32_t currentTime);
-    bool ManageGameMode(int currentState, uint32_t currentTime);
+    bool ManageGameMode(uint32_t currentTime);
     void ShowGameplayLamps(uint32_t currentTime);
     void SetCurrentPlayer(uint8_t playerNumber) { currentPlayer = playerNumber; }
 
     void ConfigureBallSave(uint32_t durationMs, uint8_t numberOfSaves = 0xFF);
+    void StartBallSave(uint32_t currentTime) { ballSaveEndTime = currentTime + ballSaveDurationMs; numberOfBallSavesRemaining = 1; }
+    bool BallSaveIsActive(uint32_t currentTime) const { return ballSaveEndTime && currentTime < ballSaveEndTime + BALL_SAVE_GRACE_PERIOD; }
     void EndBallSave();
 
 private:
@@ -28,7 +32,7 @@ private:
     uint32_t currentModeStartTime;          // The time when the current game mode started
     uint32_t ballFirstSwitchHitTime;        // The first time a playfield switch is hit during a ball, 0 if no switch has been hit yet
 
-    uint32_t ballSaveDurationMs = 5000;     // Duration of the ball save in milliseconds;
+    uint32_t ballSaveDurationMs = 15000;     // Duration of the ball save in milliseconds;
     uint32_t ballSaveEndTime = 0;
     uint8_t numberOfBallSavesAllowed = 0xFF;
     uint8_t numberOfBallSavesRemaining = 0;

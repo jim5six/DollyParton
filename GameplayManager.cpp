@@ -25,10 +25,14 @@ void GameplayManager::ResetForBall(uint32_t currentTime)
 
 // The main gameplay handler that should be called every cycle while in game mode. 
 // Returns TRUE if the ball is still in play
-bool GameplayManager::ManageGameMode(int currentState, uint32_t currentTime)
+bool GameplayManager::ManageGameMode(uint32_t currentTime)
 {
-    (void)currentTime;
-    return currentState;
+    if (!BallSaveIsActive(currentTime))
+    {
+        ballSaveEndTime = 0; //TODO: Can do this cleaner, but other code uses end time as 0 to show it's not active
+    }
+
+    return true;
 }
 
 void GameplayManager::ShowGameplayLamps(uint32_t currentTime)

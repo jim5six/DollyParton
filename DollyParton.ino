@@ -161,7 +161,6 @@ boolean MachineStateChanged = true;
 // have available)
 #define MAX_DISPLAY_BONUS 21
 #define TILT_WARNING_DEBOUNCE_TIME 1000
-#define BALL_SAVE_GRACE_PERIOD 2000
 
 /*********************************************************************
 
@@ -256,11 +255,9 @@ byte LastGameMode = 0;
 byte MaxTiltWarnings = 2;
 byte NumTiltWarnings = 0;
 byte CurrentAchievements[RPU_NUMBER_OF_PLAYERS_ALLOWED];
-byte NumberOfBallSavesRemaining;
 byte DollyTargetsComplete[RPU_NUMBER_OF_PLAYERS_ALLOWED];
 
 boolean SamePlayerShootsAgain = false;
-boolean BallSaveUsed = false;
 boolean SpecialAvailable = false;
 boolean SpecialCollected = false;
 boolean TimersPaused = true;
@@ -273,7 +270,6 @@ unsigned long GameModeEndTime = 0;
 unsigned long LastTiltWarningTime;
 unsigned long LastTimeThroughLoop;
 unsigned long LastSwitchHitTime;
-unsigned long BallSaveEndTime;
 
 /*********************************************************************
 
@@ -321,7 +317,6 @@ void SetAllParameterDefaults()
     HighScore = 10000;
     Credits = 4;
     FreePlayMode = false;
-    BallSaveNumSeconds = 15;
     MusicVolume = 10;
     SoundEffectsVolume = 10;
     CalloutsVolume = 10;
@@ -378,6 +373,8 @@ boolean LoadRuleDefaults(byte ruleLevel)
     {
         return false;
     }
+
+    GameManager.ConfigureBallSave(BallSaveNumSeconds * 1000);
 
     return true;
 }
@@ -1058,7 +1055,7 @@ boolean AwardExtraBall(boolean basedOnScore = false)
         return true;
     }
     return false;
-}s
+}
 
 #define SOUND_EFFECT_OM_CPC_VALUES 180
 #define SOUND_EFFECT_OM_CRB_VALUES 210
@@ -2154,11 +2151,6 @@ int InitNewBall(bool curStateChanged)
             RPU_SetDisplayBlank(count, 0);
         }
 
-        if (BallSaveNumSeconds > 0)
-        {
-            RPU_SetLampState(LAMP_SHOOT_AGAIN, 1, 0, 500);
-        }
-
         unsigned short songNum = SOUND_EFFECT_BG_JOLENE;
         if (CurrentBallInPlay == 2)
             songNum = SOUND_EFFECT_BG_COAT_COLORS;
@@ -2169,7 +2161,6 @@ int InitNewBall(bool curStateChanged)
             PlayBackgroundSong(songNum);
         }
 
-        BallSaveUsed = false;
         BallTimeInTrough = 0;
         NumTiltWarnings = 0;
 
@@ -2390,6 +2381,8 @@ int ManageGameMode()
         break;
     }
 
+    GameManager.ManageGameMode(CurrentTime);
+
     if (!statusRunning && !specialAnimationRunning && NumTiltWarnings <= MaxTiltWarnings)
     {
         GameManager.ShowGameplayLamps(CurrentTime);
@@ -2429,34 +2422,13 @@ int ManageGameMode()
                 else
                 {
                     // if we haven't used the ball save, and we're under the time limit, then save the ball
-                    if (BallSaveEndTime && CurrentTime < (BallSaveEndTime + BALL_SAVE_GRACE_PERIOD))
+                    if (GameManager.BallSaveIsActive(CurrentTime))
                     {
                         RPU_PushToTimedSolenoidStack(SOL_BALL_TROUGH, BallServeSolenoidStrength, CurrentTime + 100);
 
                         RPU_SetLampState(LAMP_SHOOT_AGAIN, 0);
                         BallTimeInTrough = CurrentTime;
                         returnState = MACHINE_STATE_NORMAL_GAMEPLAY;
-
-                        if (NumberOfBallSavesRemaining && NumberOfBallSavesRemaining != 0xFF)
-                        {
-                            NumberOfBallSavesRemaining -= 1;
-                            if (NumberOfBallSavesRemaining == 0)
-                            {
-                                BallSaveEndTime = 0;
-                                if (DEBUG_MESSAGES)
-                                {
-                                    Serial.write("Last ball save\n");
-                                }
-                                QueueNotification(SOUND_EFFECT_BALL_SAVE, 10);
-                            }
-                            else
-                            {
-                                if (DEBUG_MESSAGES)
-                                {
-                                    Serial.write("Not last ball save\n");
-                                }
-                            }
-                        }
                     }
                     else
                     {
@@ -3326,13 +3298,7 @@ int RunGamePlayMode(int curState, boolean curStateChanged)
 
     if (lastBallFirstSwitchHitTime == 0 && BallFirstSwitchHitTime != 0)
     {
-        BallSaveEndTime = BallFirstSwitchHitTime + ((unsigned long)BallSaveNumSeconds) * 1000;
-        NumberOfBallSavesRemaining = 1;
-    }
-    if (CurrentTime > (BallSaveEndTime + BALL_SAVE_GRACE_PERIOD))
-    {
-        BallSaveEndTime = 0;
-        NumberOfBallSavesRemaining = 0;
+        GameManager.StartBallSave(CurrentTime);
     }
 
     if (!ScrollingScores && CurrentScores[CurrentPlayer] > RPU_OS_MAX_DISPLAY_SCORE)
