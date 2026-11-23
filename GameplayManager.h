@@ -10,7 +10,7 @@ class GameplayManager {
 public:
     static GameplayManager &Instance();
 
-    void ResetForBall(uint32_t currentTime);
+    void StartBall(uint32_t currentTime, uint32_t playerUp);
     bool ManageGameMode(uint32_t currentTime);
     void ShowGameplayLamps(uint32_t currentTime);
     void SetCurrentPlayer(uint8_t playerNumber) { currentPlayer = playerNumber; }

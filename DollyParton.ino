@@ -2115,6 +2115,7 @@ int InitNewBall(bool curStateChanged)
     // then we have to do everything to set up the new ball
     if (curStateChanged)
     {
+        GameManager.StartBall(CurrentPlayer, CurrentBallInPlay);
 
         if (GameRulesSelection == GAME_RULES_PROGRESSIVE)
         {
