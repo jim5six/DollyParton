@@ -2,6 +2,7 @@
 #define PLAYER_PROGRESS_H
 
 #include <stdint.h>
+#include "DollyParton.h"
 
 #ifndef PLAYER_PROGRESS_MAX_PLAYERS
 #define PLAYER_PROGRESS_MAX_PLAYERS 4
@@ -13,27 +14,6 @@
 
 class PlayerProgressManager {
 public:
-    enum DollyLetter
-    {
-        DOLLY_D,
-        DOLLY_O,
-        DOLLY_L1,
-        DOLLY_L2,
-        DOLLY_Y,
-        DOLLY_LETTERS_COUNT
-    };
-
-    enum PartonLetter
-    {
-        PARTON_P,
-        PARTON_A,
-        PARTON_R,
-        PARTON_T,
-        PARTON_O,
-        PARTON_N,
-        PARTON_LETTERS_COUNT
-    };
-
     static PlayerProgressManager &Instance();
 
     void ResetGame();

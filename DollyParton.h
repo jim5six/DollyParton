@@ -104,4 +104,79 @@
 #define SOL_DROP_BANK_RESET         14
 #define SOL_COIN_LOCKOUT            15
 
+enum DollyLetter
+{
+    DOLLY_D,
+    DOLLY_O,
+    DOLLY_L1,
+    DOLLY_L2,
+    DOLLY_Y,
+    DOLLY_LETTERS_COUNT
+};
+
+enum PartonLetter
+{
+    PARTON_P,
+    PARTON_A,
+    PARTON_R,
+    PARTON_T,
+    PARTON_O,
+    PARTON_N,
+    PARTON_LETTERS_COUNT
+};
+
+inline uint8_t GetDollyTargetsLampID(DollyLetter letter)
+{
+    switch (letter)
+    {
+        case DOLLY_D: return LAMP_D_TARGET;
+        case DOLLY_O: return LAMP_O_TARGET;
+        case DOLLY_L1: return LAMP_L1_TARGET;
+        case DOLLY_L2: return LAMP_L2_TARGET;
+        case DOLLY_Y: return LAMP_Y_TARGET;
+        default: return 0xFF; // Invalid
+    }
+}
+
+inline uint8_t GetPartonSaucerLampID(PartonLetter letter)
+{
+    switch (letter)
+    {
+        case PARTON_P: return LAMP_P_SAUCER;
+        case PARTON_A: return LAMP_A_SAUCER;
+        case PARTON_R: return LAMP_R_SAUCER;
+        case PARTON_T: return LAMP_T_SAUCER;
+        case PARTON_O: return LAMP_O_SAUCER;
+        case PARTON_N: return LAMP_N_SAUCER;
+        default: return 0xFF; // Invalid
+    }
+}
+
+inline uint8_t GetCenterDollyLampID(DollyLetter letter)
+{
+    switch (letter)
+    {
+        case DOLLY_D: return LAMP_D_CENTER;
+        case DOLLY_O: return LAMP_DOLLY_O_CENTER;
+        case DOLLY_L1: return LAMP_1ST_L_CENTER;
+        case DOLLY_L2: return LAMP_2ND_L_CENTER;
+        case DOLLY_Y: return LAMP_Y_CENTER;
+        default: return 0xFF; // Invalid
+    }
+}
+
+inline uint8_t GetCenterPartonLampID(PartonLetter letter)
+{
+    switch (letter)
+    {
+        case PARTON_P: return LAMP_P_CENTER;
+        case PARTON_A: return LAMP_A_CENTER;
+        case PARTON_R: return LAMP_R_CENTER;
+        case PARTON_T: return LAMP_T_CENTER;
+        case PARTON_O: return LAMP_PARTON_O_CENTER;
+        case PARTON_N: return LAMP_N_CENTER;
+        default: return 0xFF; // Invalid
+    }
+}
+
 #endif
