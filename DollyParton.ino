@@ -99,9 +99,17 @@ boolean MachineStateChanged = true;
 #define SOUND_EFFECT_POP_BUMPER               6
 #define SOUND_EFFECT_LEFT_SLING               7
 #define SOUND_EFFECT_RIGHT_SLING              8
-#define SOUND_EFFECT_POP_BASS                 9
-#define SOUND_EFFECT_POP_HIGHHAT              10
-#define SOUND_EFFECT_POP_SNARE                11
+#define SOUND_EFFECT_BASS                     9
+#define SOUND_EFFECT_HIGHHAT                  10
+#define SOUND_EFFECT_SNARE                    11
+#define SOUND_EFFECT_APPLAUSE                 12
+#define SOUND_EFFECT_LOW_E_STRING             13
+#define SOUND_EFFECT_A_STRING                 14
+#define SOUND_EFFECT_D_STRING                 15
+#define SOUND_EFFECT_G_STRING                 16
+#define SOUND_EFFECT_B_STRING                 17
+#define SOUND_EFFECT_HIGH_E_STRING            18
+
 #define SOUND_EFFECT_MATCH_SPIN               28
 #define SOUND_EFFECT_DROP_TARGET_SOUND_1      30
 #define SOUND_EFFECT_DROP_TARGET_COMPLETE     40
@@ -115,14 +123,25 @@ boolean MachineStateChanged = true;
 #define SOUND_EFFECT_GAME_OVER                302
 #define SOUND_EFFECT_GAME_START               303
 #define SOUND_EFFECT_WELCOME                  304
+#define SOUND_EFFECT_SONG_MODE_START          305
+#define SOUND_EFFECT_SONG_MODE_CHANGED        306
+#define SOUND_EFFECT_SONG_MODE_COMPLETE       307
 
-//Background music
+//Background music (No lyrics, just music)
 #define SOUND_EFFECT_BG_JOLENE                400
 #define SOUND_EFFECT_BG_COAT_COLORS           401
+#define SOUND_EFFECT_BG_9TO5                  402
+#define SOUND_EFFECT_BG_JOSHUA                403
 
-//Song Mode songs
+//Full Songs
 #define SOUND_EFFECT_JOLENE                   405
 #define SOUND_EFFECT_COAT_COLORS              406
+#define SOUND_EFFECT_JOSHUA                   407
+#define SOUND_EFFECT_ISLANDS                  408
+#define SOUND_EFFECT_DUMB_BLONDE              409
+#define SOUND_EFFECT_WRECKING_BALL            410
+#define SOUND_EFFECT_WHITE_STRIPES_JOLENE     411
+#define SOUND_EFFECT_9TO5                     412
 
 //#define SOUND_EFFECT_RALLY_MUSIC_1            450
 //#define SOUND_EFFECT_RALLY_MUSIC_2            451
@@ -131,11 +150,11 @@ boolean MachineStateChanged = true;
 //#define SOUND_EFFECT_RALLY_MUSIC_5            454
 
 
-#define SOUND_EFFECT_VP_ADD_PLAYER_1          306
-#define SOUND_EFFECT_VP_ADD_PLAYER_2          (SOUND_EFFECT_VP_ADD_PLAYER_1+1)
-#define SOUND_EFFECT_VP_ADD_PLAYER_3          (SOUND_EFFECT_VP_ADD_PLAYER_1+2)
-#define SOUND_EFFECT_VP_ADD_PLAYER_4          (SOUND_EFFECT_VP_ADD_PLAYER_1+3)
-#define SOUND_EFFECT_VP_SHOOT_AGAIN           310
+//#define SOUND_EFFECT_VP_ADD_PLAYER_1          306
+//#define SOUND_EFFECT_VP_ADD_PLAYER_2          (SOUND_EFFECT_VP_ADD_PLAYER_1+1)
+//#define SOUND_EFFECT_VP_ADD_PLAYER_3          (SOUND_EFFECT_VP_ADD_PLAYER_1+2)
+//#define SOUND_EFFECT_VP_ADD_PLAYER_4          (SOUND_EFFECT_VP_ADD_PLAYER_1+3)
+//#define SOUND_EFFECT_VP_SHOOT_AGAIN           310
 #define SOUND_EFFECT_VP_GAME_RULES_EASY       423
 #define SOUND_EFFECT_VP_GAME_RULES_MEDIUM     424
 #define SOUND_EFFECT_VP_GAME_RULES_HARD       425
@@ -2769,21 +2788,21 @@ void HandleGamePlaySwitches(byte switchHit) {
       LastTimePopHit = CurrentTime;
       PopBumperProgress += 1;
       CurrentScores[CurrentPlayer] += 10 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+      PlaySoundEffect(SOUND_EFFECT_SNARE);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_L_POP_BUMPER:
       LastTimePopHit = CurrentTime;
       PopBumperProgress += 1;
       CurrentScores[CurrentPlayer] += 20 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_POP_BASS);
+      PlaySoundEffect(SOUND_EFFECT_BASS);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_B_POP_BUMPER:
       LastTimePopHit = CurrentTime;
       PopBumperProgress += 1;
       CurrentScores[CurrentPlayer] += 30 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_POP_HIGHHAT);
+      PlaySoundEffect(SOUND_EFFECT_HIGH_HAT);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_LEFT_INLANE:
@@ -2792,8 +2811,9 @@ void HandleGamePlaySwitches(byte switchHit) {
       } else {
         CurrentScores[CurrentPlayer] += 600 * PlayfieldMultiplier;
       }
-      PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+      PlaySoundEffect(SOUND_EFFECT_LOW_E_STRING);
       ValidateAndRegisterPlayfieldSwitch();
+
       break;
     case SW_RIGHT_INLANE:
       if(RPU_ReadLampState(LAMP_R_INLANE)){
@@ -2801,7 +2821,7 @@ void HandleGamePlaySwitches(byte switchHit) {
       } else {
         CurrentScores[CurrentPlayer] += 600 * PlayfieldMultiplier;
       }
-      PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+      PlaySoundEffect(SOUND_EFFECT_LOW_E_STRING);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_LEFT_OUTLANE:
@@ -2810,7 +2830,7 @@ void HandleGamePlaySwitches(byte switchHit) {
       } else {
         CurrentScores[CurrentPlayer] += 1000 * PlayfieldMultiplier;
       }
-      PlaySoundEffect(SOUND_EFFECT_POP_BASS);
+      PlaySoundEffect(SOUND_EFFECT_BASS);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_RIGHT_OUTLANE:
@@ -2819,60 +2839,60 @@ void HandleGamePlaySwitches(byte switchHit) {
       } else {
         CurrentScores[CurrentPlayer] += 1000 * PlayfieldMultiplier;
       }
-      PlaySoundEffect(SOUND_EFFECT_POP_BASS);
+      PlaySoundEffect(SOUND_EFFECT_BASS);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_LOWER_L_TARGET:
       CurrentScores[CurrentPlayer] += 500 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_POP_BASS);
+      PlaySoundEffect(SOUND_EFFECT_G_STRING);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_LOWER_R_LANE:
       CurrentScores[CurrentPlayer] += 5000 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+      PlaySoundEffect(SOUND_EFFECT_HIGH_E_STRING);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_LEFT_SLING:
       CurrentScores[CurrentPlayer] += 100 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_LEFT_SLING);
+      PlaySoundEffect(SOUND_EFFECT_A_STRING);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_RIGHT_SLING:
       CurrentScores[CurrentPlayer] += 100 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_RIGHT_SLING);
+      PlaySoundEffect(SOUND_EFFECT_B_STRING);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_DROP_1:
       CurrentScores[CurrentPlayer] += 500 * PlayfieldMultiplier;
       RPU_SetLampState(LAMP_SPINNER_1K, 1, 0, 0);
-      PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);     
+      PlaySoundEffect(SOUND_EFFECT_G_STRING);     
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_DROP_2:
       CurrentScores[CurrentPlayer] += 500 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
+      PlaySoundEffect(SOUND_EFFECT_A_STRING);
       RPU_SetLampState(LAMP_L_INLANE, 1, 0, 0);
       RPU_SetLampState(LAMP_R_INLANE, 1, 0, 0);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_DROP_3:
       CurrentScores[CurrentPlayer] += 500 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
+      PlaySoundEffect(SOUND_EFFECT_B_STRING);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_DROP_4:
       CurrentScores[CurrentPlayer] += 500 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
+      PlaySoundEffect(SOUND_EFFECT_HIGH_E_STRING);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_SUPERSTAR:
       CurrentScores[CurrentPlayer] += 5000 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_COMPLETE);
+      PlaySoundEffect(SOUND_EFFECT_SONG_MODE_START);
       RPU_PushToTimedSolenoidStack(SOL_DROP_BANK_RESET, BallServeSolenoidStrength, CurrentTime + 5000, true);
       break;
     case SW_RUBBER:
       CurrentScores[CurrentPlayer] += 30 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_POP_BASS);
+      PlaySoundEffect(SOUND_EFFECT_SNARE);
       break;
     case SW_D:
       if(RPU_ReadLampState(LAMP_1K_DOLLY_TARGET)){        
@@ -2880,7 +2900,7 @@ void HandleGamePlaySwitches(byte switchHit) {
       } else {
         CurrentScores[CurrentPlayer] += 400 * PlayfieldMultiplier;
       }
-      PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+      PlaySoundEffect(SOUND_EFFECT_LOW_E_STRING);
       RPU_SetLampState(LAMP_D_TARGET, 1, 0, 0);
       ShowDollyTargetLamps();
       ValidateAndRegisterPlayfieldSwitch();
@@ -2891,7 +2911,7 @@ void HandleGamePlaySwitches(byte switchHit) {
       } else {
         CurrentScores[CurrentPlayer] += 400 * PlayfieldMultiplier;
       }
-      PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+      PlaySoundEffect(SOUND_EFFECT_G_STRING);
       RPU_SetLampState(LAMP_O_TARGET, 1, 0, 0);
       ShowDollyTargetLamps();
       ValidateAndRegisterPlayfieldSwitch();
@@ -2902,7 +2922,7 @@ void HandleGamePlaySwitches(byte switchHit) {
       } else {
         CurrentScores[CurrentPlayer] += 400 * PlayfieldMultiplier;
       }
-      PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+      PlaySoundEffect(SOUND_EFFECT_A_STRING);
       RPU_SetLampState(LAMP_L1_TARGET, 1, 0, 0);
       ShowDollyTargetLamps();
       ValidateAndRegisterPlayfieldSwitch();
@@ -2913,7 +2933,7 @@ void HandleGamePlaySwitches(byte switchHit) {
       } else {
         CurrentScores[CurrentPlayer] += 400 * PlayfieldMultiplier;
       }
-      PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+      PlaySoundEffect(SOUND_EFFECT_B_STRING);
       RPU_SetLampState(LAMP_L2_TARGET, 1, 0, 0);
       ShowDollyTargetLamps();
       ValidateAndRegisterPlayfieldSwitch();
@@ -2924,7 +2944,7 @@ void HandleGamePlaySwitches(byte switchHit) {
       } else {
         CurrentScores[CurrentPlayer] += 400 * PlayfieldMultiplier;
       }
-      PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+      PlaySoundEffect(SOUND_EFFECT_HIGH_E_STRING);
       RPU_SetLampState(LAMP_Y_TARGET, 1, 0, 0);
       ShowDollyTargetLamps();
       ValidateAndRegisterPlayfieldSwitch();
@@ -2932,11 +2952,11 @@ void HandleGamePlaySwitches(byte switchHit) {
     case SW_SPINNER:
       if(RPU_ReadLampState(LAMP_SPINNER_1K)){
         CurrentScores[CurrentPlayer] += 1000 * PlayfieldMultiplier;
-        PlaySoundEffect(SOUND_EFFECT_SPINNER);
+        PlaySoundEffect(SOUND_EFFECT_HIGH_E_STRING);
         SpinnerProgress[CurrentPlayer] += 1;
       } else {
         CurrentScores[CurrentPlayer] += 100 * PlayfieldMultiplier;
-        PlaySoundEffect(SOUND_EFFECT_SPINNER);
+        PlaySoundEffect(SOUND_EFFECT_LOW_E_STRING);
         SpinnerProgress[CurrentPlayer] += 1;
         ValidateAndRegisterPlayfieldSwitch();
       }
@@ -2944,14 +2964,14 @@ void HandleGamePlaySwitches(byte switchHit) {
     case SW_SAUCER:
       if (GameMode!=GAME_MODE_SKILL_SHOT) {
         CurrentScores[CurrentPlayer] += 1000 * PlayfieldMultiplier;
-        PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+        PlaySoundEffect(SOUND_EFFECT_SNARE);
         LightPartonBonusLamps();
         ShowPartonBonusLamps();
         RPU_PushToTimedSolenoidStack(SOL_SAUCER, SaucerSolenoidStrength, CurrentTime + 1000, true);
         ValidateAndRegisterPlayfieldSwitch();
       } else {
         CurrentScores[CurrentPlayer] += 1000 * PlayfieldMultiplier;
-        PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
+        PlaySoundEffect(SOUND_EFFECT_LOW_E_STRING);
         RPU_PushToTimedSolenoidStack(SOL_SAUCER, SaucerSolenoidStrength, CurrentTime + 1000, true);
         ValidateAndRegisterPlayfieldSwitch();
         SetGameMode(GAME_MODE_UNSTRUCTURED_PLAY);
