@@ -19,11 +19,10 @@ void GameplayManager::StartBall(uint32_t currentTime, uint32_t playerUp)
 {
     currentPlayer = playerUp;
     ballFirstSwitchHitTime = 0;
+    lastSwitchHitTime = 0;
     ballSaveEndTime = 0;
     SetMode(GAME_MODE_SKILL_SHOT, currentTime);
     numberOfBallSavesAllowed = 0xFF;
-    lastSwitchHitTime = 0;
-    ballFirstSwitchHitTime = 0;
 }
 
 // The main gameplay handler that should be called every cycle while in game mode. 
@@ -277,6 +276,11 @@ void GameplayManager::EndBallSave()
     numberOfBallSavesRemaining = 0;
 }
 
+bool GameplayManager::PlayfieldValidated()
+{
+    return (ballFirstSwitchHitTime != 0);
+}
+
 void GameplayManager::ShowShootAgainLamp(uint32_t currentTime)
 {       
     if ((ballFirstSwitchHitTime == 0 && ballSaveDurationMs) || (ballSaveEndTime && currentTime < ballSaveEndTime))
@@ -421,7 +425,10 @@ void GameplayManager::ValidateAndRegisterPlayfieldSwitch(uint32_t currentTime)
 {
     lastSwitchHitTime = currentTime;
     if (ballFirstSwitchHitTime == 0)
+    {
         ballFirstSwitchHitTime = currentTime;
+        StartBallSave(currentTime);
+    }
 }
 
 void GameplayManager::AddToCurrentScore(uint32_t points, bool useMultiplier)

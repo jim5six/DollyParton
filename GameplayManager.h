@@ -24,6 +24,7 @@ public:
     void StartBallSave(uint32_t currentTime) { ballSaveEndTime = currentTime + ballSaveDurationMs; numberOfBallSavesRemaining = 1; }
     bool BallSaveIsActive(uint32_t currentTime) const { return ballSaveEndTime && currentTime < ballSaveEndTime + BALL_SAVE_GRACE_PERIOD; }
     void EndBallSave();
+    bool PlayfieldValidated();
 
 private:
     enum GameMode

@@ -191,7 +191,6 @@ byte LastGameMode = 0;
 byte MaxTiltWarnings = 2;
 byte NumTiltWarnings = 0;
 byte CurrentAchievements[RPU_NUMBER_OF_PLAYERS_ALLOWED];
-byte DollyTargetsComplete[RPU_NUMBER_OF_PLAYERS_ALLOWED];
 
 boolean SamePlayerShootsAgain = false;
 boolean SpecialAvailable = false;
@@ -1891,58 +1890,6 @@ byte CountBallsInTrough()
     return numBalls;
 }
 
-void AddToBonus(byte bonus)
-{
-    Bonus[CurrentPlayer] += bonus;
-    if (Bonus[CurrentPlayer] > MAX_DISPLAY_BONUS)
-    {
-        Bonus[CurrentPlayer] = MAX_DISPLAY_BONUS;
-        /*
-            // Some games award a special when
-            // bonus is maxed out
-            if (!SpecialCollected) {
-              if (SpecialAvailable) {
-                AwardSpecial();
-                SpecialAvailable = false;
-              } else {
-                SpecialAvailable = true;
-              }
-            }
-        */
-    }
-    else
-    {
-        BonusChanged = CurrentTime;
-    }
-}
-
-void IncreaseBonusX()
-{
-    if (BonusX[CurrentPlayer] < 10)
-    {
-        if (BonusX[CurrentPlayer] == 1)
-        {
-            BonusX[CurrentPlayer] = 2;
-            //      QueueNotification(SOUND_EFFECT_VP_BONUS_2X, 5);
-        }
-        else if (BonusX[CurrentPlayer] == 2)
-        {
-            BonusX[CurrentPlayer] = 3;
-            //      QueueNotification(SOUND_EFFECT_VP_BONUS_3X, 5);
-        }
-        else if (BonusX[CurrentPlayer] == 3)
-        {
-            BonusX[CurrentPlayer] = 5;
-            //      QueueNotification(SOUND_EFFECT_VP_BONUS_5X, 5);
-        }
-        else if (BonusX[CurrentPlayer] == 5)
-        {
-            BonusX[CurrentPlayer] = 10;
-            //      QueueNotification(SOUND_EFFECT_VP_BONUS_10X, 5);
-        }
-        BonusXAnimationStart = CurrentTime;
-    }
-}
 
 unsigned long GameStartNotificationTime = 0;
 boolean WaitForBallToReachOuthole = false;
@@ -1996,7 +1943,6 @@ int InitGamePlay(boolean curStateChanged)
     NumberOfBallsInPlay = 0;
     LastTimePopHit = 0;
     LastTiltWarningTime = 0;
-    DollyTargetsComplete[CurrentPlayer] = 0;
     Display_ClearOverride(0xFF);
     Display_UpdateDisplays(0xFF);
     RPU_EnableSolenoidStack();
@@ -2006,12 +1952,11 @@ int InitGamePlay(boolean curStateChanged)
 
 int InitNewBall(bool curStateChanged)
 {
-
     // If we're coming into this mode for the first time
     // then we have to do everything to set up the new ball
     if (curStateChanged)
     {
-        GameManager.StartBall(CurrentPlayer, CurrentBallInPlay);
+        GameManager.StartBall(CurrentTime, CurrentPlayer);
 
         if (GameRulesSelection == GAME_RULES_PROGRESSIVE)
         {
@@ -2262,12 +2207,17 @@ int ManageGameMode()
 
     GameManager.ManageGameMode(CurrentTime);
 
+    for (int count = 0; count < CurrentNumPlayers; count++)
+    {
+        CurrentScores[count] = PlayerProgress.GetScore(count);
+    }
+
     if (!statusRunning && !specialAnimationRunning && NumTiltWarnings <= MaxTiltWarnings)
     {
         GameManager.ShowGameplayLamps(CurrentTime);
     }
 
-    if (Display_UpdateDisplays(0xFF, false, (BallFirstSwitchHitTime == 0) ? true : false, (BallFirstSwitchHitTime > 0 && ((CurrentTime - Display_GetLastTimeScoreChanged()) > 2000)) ? true : false))
+    if (Display_UpdateDisplays(0xFF, false, GameManager.PlayfieldValidated() ? false : true, (GameManager.PlayfieldValidated() && ((CurrentTime - Display_GetLastTimeScoreChanged()) > 2000)) ? true : false))
     {
         Audio.StopSound(SOUND_EFFECT_SCORE_TICK);
         PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
@@ -2291,7 +2241,7 @@ int ManageGameMode()
             if ((CurrentTime - BallTimeInTrough) > 750)
             {
 
-                if ((BallFirstSwitchHitTime == 0 && NumTiltWarnings <= MaxTiltWarnings))
+                if ((!GameManager.PlayfieldValidated() && NumTiltWarnings <= MaxTiltWarnings))
                 {
                     // Nothing hit yet, so return the ball to the player
                     RPU_PushToTimedSolenoidStack(SOL_BALL_TROUGH, BallServeSolenoidStrength, CurrentTime);
@@ -2939,11 +2889,6 @@ int RunGamePlayMode(int curState, boolean curStateChanged)
                 CreditResetPressStarted = 0;
             }
         }
-    }
-
-    if (lastBallFirstSwitchHitTime == 0 && BallFirstSwitchHitTime != 0)
-    {
-        GameManager.StartBallSave(CurrentTime);
     }
 
     if (!ScrollingScores && CurrentScores[CurrentPlayer] > RPU_OS_MAX_DISPLAY_SCORE)
