@@ -150,11 +150,11 @@ boolean MachineStateChanged = true;
 //#define SOUND_EFFECT_RALLY_MUSIC_5            454
 
 
-//#define SOUND_EFFECT_VP_ADD_PLAYER_1          306
-//#define SOUND_EFFECT_VP_ADD_PLAYER_2          (SOUND_EFFECT_VP_ADD_PLAYER_1+1)
-//#define SOUND_EFFECT_VP_ADD_PLAYER_3          (SOUND_EFFECT_VP_ADD_PLAYER_1+2)
-//#define SOUND_EFFECT_VP_ADD_PLAYER_4          (SOUND_EFFECT_VP_ADD_PLAYER_1+3)
-//#define SOUND_EFFECT_VP_SHOOT_AGAIN           310
+#define SOUND_EFFECT_VP_ADD_PLAYER_1          325
+#define SOUND_EFFECT_VP_ADD_PLAYER_2          (SOUND_EFFECT_VP_ADD_PLAYER_1+1)
+#define SOUND_EFFECT_VP_ADD_PLAYER_3          (SOUND_EFFECT_VP_ADD_PLAYER_1+2)
+#define SOUND_EFFECT_VP_ADD_PLAYER_4          (SOUND_EFFECT_VP_ADD_PLAYER_1+3)
+#define SOUND_EFFECT_VP_SHOOT_AGAIN           310
 #define SOUND_EFFECT_VP_GAME_RULES_EASY       423
 #define SOUND_EFFECT_VP_GAME_RULES_MEDIUM     424
 #define SOUND_EFFECT_VP_GAME_RULES_HARD       425
@@ -927,10 +927,10 @@ boolean AddPlayer(boolean resetNumPlayers = false) {
   CurrentNumPlayers += 1;
   RPU_SetDisplay(CurrentNumPlayers - 1, 0, true, 2);
   
-  if (CurrentNumPlayers > 1) {
+  //if (CurrentNumPlayers > 1) {
     // If this is second, third, or fourth player, then playe the announcment
-    QueueNotification(SOUND_EFFECT_VP_ADD_PLAYER_1 + (CurrentNumPlayers - 1), 10);
-  }
+  //  QueueNotification(SOUND_EFFECT_VP_ADD_PLAYER_1 + (CurrentNumPlayers - 1), 10);
+  //}
 
   if (!FreePlayMode) {
     Credits -= 1;
@@ -2802,7 +2802,7 @@ void HandleGamePlaySwitches(byte switchHit) {
       LastTimePopHit = CurrentTime;
       PopBumperProgress += 1;
       CurrentScores[CurrentPlayer] += 30 * PlayfieldMultiplier;
-      PlaySoundEffect(SOUND_EFFECT_HIGH_HAT);
+      PlaySoundEffect(SOUND_EFFECT_HIGHHAT);
       ValidateAndRegisterPlayfieldSwitch();
       break;
     case SW_LEFT_INLANE:
