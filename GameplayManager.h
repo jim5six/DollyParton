@@ -3,16 +3,21 @@
 
 #include <stdint.h>
 #include "PlayerProgress.h"
+#include "AudioHandler.h"
 
 #define BALL_SAVE_GRACE_PERIOD 2000
 
 class GameplayManager {
 public:
-    static GameplayManager &Instance();
+    static GameplayManager &Instance(AudioHandler &audio);
 
+    // Functions that are called by the main loop to manage gameplay
+    // Eventually we should condense most of these into one call that happens per loop
     void StartBall(uint32_t currentTime, uint32_t playerUp);
     bool ManageGameMode(uint32_t currentTime);
+    void HandleGameplaySwitches(byte switchHit, uint32_t currentTime);
     void ShowGameplayLamps(uint32_t currentTime);
+
     void SetCurrentPlayer(uint8_t playerNumber) { currentPlayer = playerNumber; }
 
     void ConfigureBallSave(uint32_t durationMs, uint8_t numberOfSaves = 0xFF);
@@ -30,17 +35,21 @@ private:
     uint8_t currentPlayer;                  // Current player number (0-based index)
     GameMode currentMode;                   // The current game mode
     uint32_t currentModeStartTime;          // The time when the current game mode started
-    uint32_t ballFirstSwitchHitTime;        // The first time a playfield switch is hit during a ball, 0 if no switch has been hit yet
 
     uint32_t ballSaveDurationMs = 15000;     // Duration of the ball save in milliseconds;
     uint32_t ballSaveEndTime = 0;
     uint8_t numberOfBallSavesAllowed = 0xFF;
     uint8_t numberOfBallSavesRemaining = 0;
+    byte playfieldMultiplier = 1;
     bool samePlayerShootsAgain = false;
 
+    uint32_t lastSwitchHitTime = 0;
+    uint32_t ballFirstSwitchHitTime = 0;
+
+    AudioHandler &audioHandler;
     PlayerProgressManager &playerProgress = PlayerProgressManager::Instance();
 
-    GameplayManager();
+    explicit GameplayManager(AudioHandler &audio);
     GameplayManager(const GameplayManager &);
     GameplayManager &operator=(const GameplayManager &);
     
@@ -49,6 +58,9 @@ private:
     void ShowDollyBonusLamps();
     void LightPartonBonusLamps();
     void ShowPartonBonusLamps();
+    void AddToCurrentScore(uint32_t points, bool useMultiplier = true);
+    void ValidateAndRegisterPlayfieldSwitch(uint32_t currentTime);
+    void PlaySoundEffect(unsigned short soundIndex) { audioHandler.PlaySound(soundIndex, AUDIO_PLAY_TYPE_WAV_TRIGGER); }
 
     void SetMode(GameMode newMode, uint32_t currentTime) {
         currentMode = newMode;
