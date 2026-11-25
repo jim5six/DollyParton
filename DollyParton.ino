@@ -1555,11 +1555,6 @@ void QueueNotification(unsigned int soundEffectNum, byte priority)
     Audio.QueuePrioritizedNotification(soundEffectNum, 0, priority, CurrentTime);
 }
 
-void AlertPlayerUp()
-{
-    //   QueueNotification(SOUND_EFFECT_WELCOME, 1);
-}
-
 ////////////////////////////////////////////////////////////////////////////
 //
 //  Diagnostics Mode
@@ -1982,8 +1977,7 @@ int InitNewBall(bool curStateChanged)
         BallFirstSwitchHitTime = 0;
 
         RPU_SetDisplayCredits(Credits, !FreePlayMode);
-        if (CurrentNumPlayers > 1 && (CurrentBallInPlay != 1 || CurrentPlayer != 0) && !SamePlayerShootsAgain)
-            AlertPlayerUp();
+
         SamePlayerShootsAgain = false;
 
         RPU_SetDisplayBallInPlay(CurrentBallInPlay);
@@ -2268,7 +2262,7 @@ int ManageGameMode()
                             Display_ClearOverride(0xFF);
                             Audio.StopAllAudio();
                             // PlaySoundEffect(SOUND_EFFECT_);
-                            returnState = MACHINE_STATE_BALL_OVER;
+                            returnState = MACHINE_STATE_COUNTDOWN_BONUS;
                         }
                     }
                 }
@@ -2318,8 +2312,8 @@ int CountdownBonus(boolean curStateChanged)
         // ShowBonusLamps();
         IncrementingBonusXCounter = 1;
         DecrementingBonusCounter = Bonus[CurrentPlayer];
-        TotalBonus = Bonus[CurrentPlayer];
-        TotalBonusX = BonusX[CurrentPlayer];
+        TotalBonus = PlayerProgress.GetBonus(CurrentPlayer);
+        TotalBonusX = GameManager.GetActiveBonusX();
         CountdownBonusHurryUp = false;
         BonusSoundIncrement = 0;
         LastBonusSoundPlayed = 0;

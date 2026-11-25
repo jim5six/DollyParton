@@ -23,6 +23,12 @@ void GameplayManager::StartBall(uint32_t currentTime, uint32_t playerUp)
     ballSaveEndTime = 0;
     SetMode(GAME_MODE_SKILL_SHOT, currentTime);
     numberOfBallSavesAllowed = 0xFF;
+    ballBonusX = 1;
+
+    for (uint8_t i = 0; i < DOLLY_LETTERS_COUNT; i++)
+    {
+        ballDollyStandupProgress[i] = false;
+    }
 }
 
 // The main gameplay handler that should be called every cycle while in game mode. 
@@ -132,16 +138,19 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
     case SW_DROP_2:
+        AdvanceBonusX();
         AddToCurrentScore(500);
         PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
     case SW_DROP_3:
+        AdvanceBonusX();
         AddToCurrentScore(500);
         PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
     case SW_DROP_4:
+        AdvanceBonusX();
         AddToCurrentScore(500);
         PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
@@ -165,7 +174,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
             AddToCurrentScore(400);
         }
         PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
-        RPU_SetLampState(LAMP_D_TARGET, 1, 0, 0);
+        SpotDollyStandupLetter(DOLLY_D);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
     case SW_O:
@@ -178,7 +187,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
             AddToCurrentScore(400);
         }
         PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
-        RPU_SetLampState(LAMP_O_TARGET, 1, 0, 0);
+        SpotDollyStandupLetter(DOLLY_O);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
     case SW_L1:
@@ -191,7 +200,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
             AddToCurrentScore(400);
         }
         PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
-        RPU_SetLampState(LAMP_L1_TARGET, 1, 0, 0);
+        SpotDollyStandupLetter(DOLLY_L1);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
     case SW_L2:
@@ -204,7 +213,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
             AddToCurrentScore(400);
         }
         PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
-        RPU_SetLampState(LAMP_L2_TARGET, 1, 0, 0);
+        SpotDollyStandupLetter(DOLLY_L2);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
     case SW_Y:
@@ -217,7 +226,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
             AddToCurrentScore(400);
         }
         PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
-        RPU_SetLampState(LAMP_Y_TARGET, 1, 0, 0);
+        SpotDollyStandupLetter(DOLLY_Y);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
     case SW_SPINNER:
@@ -258,7 +267,7 @@ void GameplayManager::ShowGameplayLamps(uint32_t currentTime)
     ShowShootAgainLamp(currentTime);
     ShowDollyTargetLamps();
     ShowDollyBonusLamps();
-    LightPartonBonusLamps();
+    ShowBonusXLamps();
     ShowPartonBonusLamps();
 
     ShowLampAnimation(2, 144, currentTime, 23, false, false);
@@ -281,6 +290,11 @@ bool GameplayManager::PlayfieldValidated()
     return (ballFirstSwitchHitTime != 0);
 }
 
+uint8_t GameplayManager::GetActiveBonusX()
+{
+    return ballBonusX;
+}
+
 void GameplayManager::ShowShootAgainLamp(uint32_t currentTime)
 {       
     if ((ballFirstSwitchHitTime == 0 && ballSaveDurationMs) || (ballSaveEndTime && currentTime < ballSaveEndTime))
@@ -298,87 +312,25 @@ void GameplayManager::ShowShootAgainLamp(uint32_t currentTime)
 
 void GameplayManager::ShowDollyTargetLamps()
 {
-    /*
-    if (DollyTargetsComplete[currentPlayer] < 5 && RPU_ReadLampState(LAMP_D_TARGET) && RPU_ReadLampState(LAMP_O_TARGET) && RPU_ReadLampState(LAMP_L1_TARGET) && RPU_ReadLampState(LAMP_L2_TARGET) && RPU_ReadLampState(LAMP_Y_TARGET))
+    for (uint8_t i = 0; i < DOLLY_LETTERS_COUNT; i++)
     {
-        DollyTargetsComplete[currentPlayer] += 1;
-        RPU_SetLampState(LAMP_D_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_O_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_L1_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_L2_TARGET, 0, 0, 0);
-        RPU_SetLampState(LAMP_Y_TARGET, 0, 0, 0);
-        ShowDollyBonusLamps();
+        RPU_SetLampState(LAMP_D_TARGET + i, ballDollyStandupProgress[i]);
     }
-    else if (DollyTargetsComplete[currentPlayer] > 5)
-    {
-        DollyTargetsComplete[currentPlayer] == 5;
-    }
-        */
 }
 
 void GameplayManager::ShowDollyBonusLamps()
 {
-    /*
-    if (DollyTargetsComplete[currentPlayer] == 1)
+    for (uint8_t i = 0; i < DOLLY_LETTERS_COUNT; i++)
     {
-        RPU_SetLampState(LAMP_D_CENTER, true);
-        RPU_SetLampState(LAMP_DOLLY_O_CENTER, false);
-        RPU_SetLampState(LAMP_1ST_L_CENTER, false);
-        RPU_SetLampState(LAMP_2ND_L_CENTER, false);
-        RPU_SetLampState(LAMP_Y_CENTER, false);
-        RPU_SetLampState(LAMP_1K_DOLLY_TARGET, true);
+        RPU_SetLampState(LAMP_D_CENTER + i, playerProgress.IsDollyLetterSpotted(currentPlayer, static_cast<DollyLetter>(i)));
     }
-    else if (DollyTargetsComplete[currentPlayer] == 2)
-    {
-        RPU_SetLampState(LAMP_D_CENTER, true);
-        RPU_SetLampState(LAMP_DOLLY_O_CENTER, true);
-        RPU_SetLampState(LAMP_1ST_L_CENTER, false);
-        RPU_SetLampState(LAMP_2ND_L_CENTER, false);
-        RPU_SetLampState(LAMP_Y_CENTER, false);
-        RPU_SetLampState(LAMP_1K_DOLLY_TARGET, true);
-    }
-    else if (DollyTargetsComplete[currentPlayer] == 3)
-    {
-        RPU_SetLampState(LAMP_D_CENTER, true);
-        RPU_SetLampState(LAMP_DOLLY_O_CENTER, true);
-        RPU_SetLampState(LAMP_1ST_L_CENTER, true);
-        RPU_SetLampState(LAMP_2ND_L_CENTER, false);
-        RPU_SetLampState(LAMP_Y_CENTER, false);
-        RPU_SetLampState(LAMP_1K_DOLLY_TARGET, true);
-    }
-    else if (DollyTargetsComplete[currentPlayer] == 4)
-    {
-        RPU_SetLampState(LAMP_D_CENTER, true);
-        RPU_SetLampState(LAMP_DOLLY_O_CENTER, true);
-        RPU_SetLampState(LAMP_1ST_L_CENTER, true);
-        RPU_SetLampState(LAMP_2ND_L_CENTER, true);
-        RPU_SetLampState(LAMP_Y_CENTER, false);
-        RPU_SetLampState(LAMP_1K_DOLLY_TARGET, true);
-    }
-    else if (DollyTargetsComplete[currentPlayer] == 5)
-    {
-        RPU_SetLampState(LAMP_D_TARGET, 1, 0, 500);
-        RPU_SetLampState(LAMP_O_TARGET, 1, 0, 500);
-        RPU_SetLampState(LAMP_L1_TARGET, 1, 0, 500);
-        RPU_SetLampState(LAMP_L2_TARGET, 1, 0, 500);
-        RPU_SetLampState(LAMP_Y_TARGET, 1, 0, 500);
-        RPU_SetLampState(LAMP_D_CENTER, 1, 0, 500);
-        RPU_SetLampState(LAMP_DOLLY_O_CENTER, 1, 0, 500);
-        RPU_SetLampState(LAMP_1ST_L_CENTER, 1, 0, 500);
-        RPU_SetLampState(LAMP_2ND_L_CENTER, 1, 0, 500);
-        RPU_SetLampState(LAMP_Y_CENTER, 1, 0, 500);
-        RPU_SetLampState(LAMP_1K_DOLLY_TARGET, true);
-        RPU_SetLampState(LAMP_44K_BONUS, true);
-    }
-    else
-    {
-        RPU_SetLampState(LAMP_D_CENTER, false);
-        RPU_SetLampState(LAMP_DOLLY_O_CENTER, false);
-        RPU_SetLampState(LAMP_1ST_L_CENTER, false);
-        RPU_SetLampState(LAMP_2ND_L_CENTER, false);
-        RPU_SetLampState(LAMP_Y_CENTER, false);
-    }
-    */
+}
+
+void GameplayManager::ShowBonusXLamps()
+{
+    RPU_SetLampState(LAMP_2X_BONUS, ballBonusX >= 2 ? 1 : 0);
+    RPU_SetLampState(LAMP_3X_BONUS, ballBonusX >= 3 ? 1 : 0);
+    RPU_SetLampState(LAMP_5X_BONUS, ballBonusX >= 5 ? 1 : 0);
 }
 
 void GameplayManager::LightPartonBonusLamps()
@@ -435,4 +387,45 @@ void GameplayManager::AddToCurrentScore(uint32_t points, bool useMultiplier)
 {
     uint32_t actualPoints = useMultiplier ? points * playfieldMultiplier : points;
     playerProgress.AddScore(currentPlayer, actualPoints);
+}
+
+void GameplayManager::SpotDollyStandupLetter(DollyLetter letter)
+{
+    ballDollyStandupProgress[letter] = true;
+
+    // If all letters are lit, award a permanent center Dolly letter
+    bool allLettersLit = true;
+    for (uint8_t i = 0; i < DOLLY_LETTERS_COUNT; i++)
+    {
+        if (!ballDollyStandupProgress[i])
+        {
+            allLettersLit = false;
+            break;
+        }
+    }
+    if (allLettersLit)
+    {
+        playerProgress.SpotNextDollyLetter(currentPlayer);
+
+        for (uint8_t i = 0; i < DOLLY_LETTERS_COUNT; i++)
+        {
+            ballDollyStandupProgress[i] = false;
+        }
+    }
+}
+
+void GameplayManager::AdvanceBonusX()
+{
+    if (ballBonusX == 1)
+    {
+        ballBonusX = 2;
+    }
+    else if (ballBonusX == 2)
+    {
+        ballBonusX = 3;
+    }
+    else
+    {
+        ballBonusX = 5;
+    }
 }

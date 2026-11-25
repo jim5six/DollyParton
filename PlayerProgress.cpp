@@ -68,6 +68,24 @@ uint8_t PlayerProgressManager::GetBonus(uint8_t playerNumber) const
     if (playerNumber >= PLAYER_PROGRESS_MAX_PLAYERS)
         return 0;
 
+    uint8_t DollyBonuusTotal = 0;
+
+    for (int letter = 0; letter < DOLLY_LETTERS_COUNT; letter++)
+    {
+        if (DollyLettersProgress[playerNumber][letter])
+        {
+            DollyBonuusTotal += 1;
+        }
+    }
+
+    for (int letter = 0; letter < PARTON_LETTERS_COUNT; letter++)
+    {
+        if (PartonLettersProgress[playerNumber][letter])
+        {
+            DollyBonuusTotal += 1;
+        }
+    }
+
     return bonus[playerNumber];
 }
 
@@ -83,10 +101,27 @@ void PlayerProgressManager::AddBonus(uint8_t playerNumber, uint8_t bonustoAdd)
         bonus[playerNumber] += bonustoAdd;
 }
 
-void PlayerProgressManager::SpotDollyLetter(uint8_t playerNumber, DollyLetter letter)
+void PlayerProgressManager::SpotNextDollyLetter(uint8_t playerNumber)
+{
+    // Spot the next unlit letter
+    if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS)
+    {
+        for (uint8_t letter = 0; letter < DOLLY_LETTERS_COUNT; letter++)
+        {
+            if (!DollyLettersProgress[playerNumber][letter])
+            {
+                DollyLettersProgress[playerNumber][letter] = true;
+                break;
+            }
+        }
+    }
+}
+
+bool PlayerProgressManager::IsDollyLetterSpotted(uint8_t playerNumber, DollyLetter letter) const
 {
     if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS && letter < DOLLY_LETTERS_COUNT)
-        DollyLettersProgress[playerNumber][letter] = true;
+        return DollyLettersProgress[playerNumber][letter];
+    return false;
 }
 
 void PlayerProgressManager::SpotPartonLetter(uint8_t playerNumber, PartonLetter letter)

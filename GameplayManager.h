@@ -25,6 +25,7 @@ public:
     bool BallSaveIsActive(uint32_t currentTime) const { return ballSaveEndTime && currentTime < ballSaveEndTime + BALL_SAVE_GRACE_PERIOD; }
     void EndBallSave();
     bool PlayfieldValidated();
+    uint8_t GetActiveBonusX();
 
 private:
     enum GameMode
@@ -47,6 +48,9 @@ private:
     uint32_t lastSwitchHitTime = 0;
     uint32_t ballFirstSwitchHitTime = 0;
 
+    bool ballDollyStandupProgress[DOLLY_LETTERS_COUNT];
+    uint8_t ballBonusX;
+
     AudioHandler &audioHandler;
     PlayerProgressManager &playerProgress = PlayerProgressManager::Instance();
 
@@ -59,9 +63,13 @@ private:
     void ShowDollyBonusLamps();
     void LightPartonBonusLamps();
     void ShowPartonBonusLamps();
+    void ShowBonusXLamps();
     void AddToCurrentScore(uint32_t points, bool useMultiplier = true);
     void ValidateAndRegisterPlayfieldSwitch(uint32_t currentTime);
     void PlaySoundEffect(unsigned short soundIndex) { audioHandler.PlaySound(soundIndex, AUDIO_PLAY_TYPE_WAV_TRIGGER); }
+
+    void SpotDollyStandupLetter(DollyLetter letter);
+    void AdvanceBonusX();
 
     void SetMode(GameMode newMode, uint32_t currentTime) {
         currentMode = newMode;

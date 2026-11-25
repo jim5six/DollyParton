@@ -27,7 +27,8 @@ public:
     void SetBonus(uint8_t playerNumber, uint8_t bonustoAdd);
     void AddBonus(uint8_t playerNumber, uint8_t bonustoAdd);
 
-    void SpotDollyLetter(uint8_t playerNumber, DollyLetter letter);
+    void SpotNextDollyLetter(uint8_t playerNumber);
+    bool IsDollyLetterSpotted(uint8_t playerNumber, DollyLetter letter) const;
     void SpotPartonLetter(uint8_t playerNumber, PartonLetter letter);
 
 private:
