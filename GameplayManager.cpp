@@ -40,6 +40,15 @@ bool GameplayManager::ManageGameMode(uint32_t currentTime)
         ballSaveEndTime = 0; //TODO: Can do this cleaner, but other code uses end time as 0 to show it's not active
     }
 
+    // End skill shot mode after 10 seconds, if the player hasn't hit a switch yet
+    if (currentMode == GAME_MODE_SKILL_SHOT)
+    {
+        if (currentTime - currentModeStartTime > skillShotDurationMs)
+        {
+            SetMode(GAME_MODE_UNSTRUCTURED_PLAY, currentTime);
+        }
+    }
+
     return true;
 }
 
@@ -258,6 +267,32 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
             ValidateAndRegisterPlayfieldSwitch(currentTime);
             SetMode(GAME_MODE_UNSTRUCTURED_PLAY, currentTime);
         }
+
+        if (RPU_ReadLampState(LAMP_P_SAUCER))
+        {
+            playerProgress.SpotPartonLetter(currentPlayer, PARTON_P);
+        }
+        else if (RPU_ReadLampState(LAMP_A_SAUCER))
+        {
+            playerProgress.SpotPartonLetter(currentPlayer, PARTON_A);
+        }
+        else if (RPU_ReadLampState(LAMP_R_SAUCER))
+        {
+            playerProgress.SpotPartonLetter(currentPlayer, PARTON_R);
+        }
+        else if (RPU_ReadLampState(LAMP_T_SAUCER))
+        {
+            playerProgress.SpotPartonLetter(currentPlayer, PARTON_T);
+        }
+        else if (RPU_ReadLampState(LAMP_O_SAUCER))
+        {
+            playerProgress.SpotPartonLetter(currentPlayer, PARTON_O);
+        }
+        else if (RPU_ReadLampState(LAMP_N_SAUCER))
+        {
+            playerProgress.SpotPartonLetter(currentPlayer, PARTON_N);
+        }
+
         break;
     }
 }
@@ -367,10 +402,12 @@ void GameplayManager::LightPartonBonusLamps()
 
 void GameplayManager::ShowPartonBonusLamps()
 {
-    if (RPU_ReadLampState(LAMP_P_SAUCER) && RPU_ReadLampState(LAMP_A_SAUCER) && RPU_ReadLampState(LAMP_R_SAUCER) && RPU_ReadLampState(LAMP_T_SAUCER) && RPU_ReadLampState(LAMP_O_SAUCER) && RPU_ReadLampState(LAMP_N_SAUCER))
-    {
-        RPU_SetLampState(LAMP_22K_BONUS, true);
-    }
+    RPU_SetLampState(LAMP_P_CENTER, playerProgress.IsPartonLetterSpotted(currentPlayer, PARTON_P));
+    RPU_SetLampState(LAMP_A_CENTER, playerProgress.IsPartonLetterSpotted(currentPlayer, PARTON_A));
+    RPU_SetLampState(LAMP_R_CENTER, playerProgress.IsPartonLetterSpotted(currentPlayer, PARTON_R));
+    RPU_SetLampState(LAMP_T_CENTER, playerProgress.IsPartonLetterSpotted(currentPlayer, PARTON_T));
+    RPU_SetLampState(LAMP_PARTON_O_CENTER, playerProgress.IsPartonLetterSpotted(currentPlayer, PARTON_O));
+    RPU_SetLampState(LAMP_N_CENTER, playerProgress.IsPartonLetterSpotted(currentPlayer, PARTON_N));
 }
 
 void GameplayManager::ValidateAndRegisterPlayfieldSwitch(uint32_t currentTime)

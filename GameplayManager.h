@@ -34,6 +34,8 @@ private:
         GAME_MODE_UNSTRUCTURED_PLAY,
     };
 
+    const uint32_t skillShotDurationMs = 10000;
+
     uint8_t currentPlayer;                  // Current player number (0-based index)
     GameMode currentMode;                   // The current game mode
     uint32_t currentModeStartTime;          // The time when the current game mode started

@@ -29,6 +29,7 @@ public:
 
     void SpotNextDollyLetter(uint8_t playerNumber);
     bool IsDollyLetterSpotted(uint8_t playerNumber, DollyLetter letter) const;
+    bool IsPartonLetterSpotted(uint8_t playerNumber, PartonLetter letter) const;
     void SpotPartonLetter(uint8_t playerNumber, PartonLetter letter);
 
 private:

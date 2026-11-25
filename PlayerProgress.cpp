@@ -68,13 +68,13 @@ uint8_t PlayerProgressManager::GetBonus(uint8_t playerNumber) const
     if (playerNumber >= PLAYER_PROGRESS_MAX_PLAYERS)
         return 0;
 
-    uint8_t DollyBonuusTotal = 0;
+    uint8_t DollyBonusTotal = 1; // 1000 minimum bonus
 
     for (int letter = 0; letter < DOLLY_LETTERS_COUNT; letter++)
     {
         if (DollyLettersProgress[playerNumber][letter])
         {
-            DollyBonuusTotal += 1;
+            DollyBonusTotal += 1;
         }
     }
 
@@ -82,11 +82,11 @@ uint8_t PlayerProgressManager::GetBonus(uint8_t playerNumber) const
     {
         if (PartonLettersProgress[playerNumber][letter])
         {
-            DollyBonuusTotal += 1;
+            DollyBonusTotal += 1;
         }
     }
 
-    return bonus[playerNumber];
+    return DollyBonusTotal + bonus[playerNumber];
 }
 
 void PlayerProgressManager::SetBonus(uint8_t playerNumber, uint8_t bonusToAdd)
@@ -121,6 +121,13 @@ bool PlayerProgressManager::IsDollyLetterSpotted(uint8_t playerNumber, DollyLett
 {
     if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS && letter < DOLLY_LETTERS_COUNT)
         return DollyLettersProgress[playerNumber][letter];
+    return false;
+}
+
+bool PlayerProgressManager::IsPartonLetterSpotted(uint8_t playerNumber, PartonLetter letter) const
+{
+    if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS && letter < PARTON_LETTERS_COUNT)
+        return PartonLettersProgress[playerNumber][letter];
     return false;
 }
 

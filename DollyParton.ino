@@ -1895,6 +1895,7 @@ int InitGamePlay(boolean curStateChanged)
 
     if (curStateChanged)
     {
+        PlayerProgress.ResetGame();
         RPU_TurnOffAllLamps();
         SetGeneralIlluminationOn(true);
         GameStartNotificationTime = CurrentTime;
@@ -2201,10 +2202,7 @@ int ManageGameMode()
 
     GameManager.ManageGameMode(CurrentTime);
 
-    for (int count = 0; count < CurrentNumPlayers; count++)
-    {
-        CurrentScores[count] = PlayerProgress.GetScore(count);
-    }
+    SyncScores();
 
     if (!statusRunning && !specialAnimationRunning && NumTiltWarnings <= MaxTiltWarnings)
     {
@@ -2309,7 +2307,7 @@ int CountdownBonus(boolean curStateChanged)
         // ShowBonusLamps();
         IncrementingBonusXCounter = 1;
     
-        TotalBonus = (PlayerProgress.GetBonus(CurrentPlayer) + 10) * GameManager.GetActiveBonusX();
+        TotalBonus = (PlayerProgress.GetBonus(CurrentPlayer)) * GameManager.GetActiveBonusX();
 
         BonusCountDownEndTime = 0xFFFFFFFF;
         // Some sound cards have a special index
@@ -2889,6 +2887,7 @@ int RunGamePlayMode(int curState, boolean curStateChanged)
     return returnState;
 }
 
+// Get the index of the available display to the left or right.
 byte GetAdjacentDisplayIndex(byte currentPlayer)
 {
     if (currentPlayer == 0)
@@ -2906,6 +2905,15 @@ byte GetAdjacentDisplayIndex(byte currentPlayer)
     else
     {
         return 4;
+    }
+}
+
+// Sync the global score count with the PlayerManager. Eventually we will just use the player manager throughout.
+void SyncScores()
+{
+    for (int count = 0; count < CurrentNumPlayers; count++)
+    {
+        CurrentScores[count] = PlayerProgress.GetScore(count);
     }
 }
 
