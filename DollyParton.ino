@@ -2285,10 +2285,7 @@ unsigned long BonusCountDownEndTime = 0;
 byte DecrementingBonusCounter;
 byte IncrementingBonusXCounter;
 byte TotalBonus = 0;
-byte TotalBonusX = 0;
-byte BonusSoundIncrement;
-boolean CountdownBonusHurryUp = false;
-int LastBonusSoundPlayed = 0;
+byte BonusRemaining = 0;
 
 int CountDownDelayTimes[] = {130, 130, 130, 100, 100, 60, 60, 60, 60, 60};
 
@@ -2311,12 +2308,8 @@ int CountdownBonus(boolean curStateChanged)
         LastCountdownReportTime = CurrentTime;
         // ShowBonusLamps();
         IncrementingBonusXCounter = 1;
-        DecrementingBonusCounter = Bonus[CurrentPlayer];
-        TotalBonus = PlayerProgress.GetBonus(CurrentPlayer);
-        TotalBonusX = GameManager.GetActiveBonusX();
-        CountdownBonusHurryUp = false;
-        BonusSoundIncrement = 0;
-        LastBonusSoundPlayed = 0;
+    
+        TotalBonus = (PlayerProgress.GetBonus(CurrentPlayer) + 10) * GameManager.GetActiveBonusX();
 
         BonusCountDownEndTime = 0xFFFFFFFF;
         // Some sound cards have a special index
@@ -2326,57 +2319,34 @@ int CountdownBonus(boolean curStateChanged)
         //    PlaySoundEffect(SOUND_EFFECT_STOP_BACKGROUND);
     }
 
-    // CUSTOMIZATION TODO:
-    // If your game has flipper switches, you can use them to
-    // speed up the bonus countdown
-    // if (RPU_ReadSingleSwitchState(SW_LEFT_FLIPPER) && RPU_ReadSingleSwitchState(SW_RIGHT_FLIPPER)) CountdownBonusHurryUp = true;
+    const unsigned long countdownDelayTime = 130;
 
-    unsigned long countdownDelayTime = (unsigned long)(CountDownDelayTimes[IncrementingBonusXCounter - 1]);
-    if (CountdownBonusHurryUp && countdownDelayTime > ((unsigned long)CountDownDelayTimes[9]))
-        countdownDelayTime = CountDownDelayTimes[9];
+    Display_OverrideScoreDisplay(GetAdjacentDisplayIndex(CurrentPlayer), TotalBonus * 1000, 0);
 
     if ((CurrentTime - LastCountdownReportTime) > countdownDelayTime)
     {
-
-        if (DecrementingBonusCounter)
+        if (TotalBonus > 1)
         {
 
             // Only give sound & score if this isn't a tilt
             if (NumTiltWarnings <= MaxTiltWarnings)
             {
-                // int soundToPlay = SOUND_EFFECT_BONUS_1 + (BonusSoundIncrement/4);
-                // if (soundToPlay>SOUND_EFFECT_BONUS_8) soundToPlay = SOUND_EFFECT_BONUS_8;
-                // if (LastBonusSoundPlayed!=0) Audio.StopSound(LastBonusSoundPlayed);
-                // PlaySoundEffect(soundToPlay);
-                // LastBonusSoundPlayed = soundToPlay;
-                BonusSoundIncrement += 1;
-                CurrentScores[CurrentPlayer] += 1000;
+                PlayerProgress.AddScore(CurrentPlayer, 1000);
             }
 
-            DecrementingBonusCounter -= 1;
-            Bonus[CurrentPlayer] = DecrementingBonusCounter;
-            // ShowBonusLamps();
+            TotalBonus -= 1;
         }
         else if (BonusCountDownEndTime == 0xFFFFFFFF)
         {
-            IncrementingBonusXCounter += 1;
-            if (BonusX[CurrentPlayer] > 1)
-            {
-                DecrementingBonusCounter = TotalBonus;
-                Bonus[CurrentPlayer] = TotalBonus;
-                // ShowBonusLamps();
-                BonusX[CurrentPlayer] -= 1;
-                if (BonusX[CurrentPlayer] == 9)
-                    BonusX[CurrentPlayer] = 8;
-            }
-            else
-            {
-                BonusX[CurrentPlayer] = TotalBonusX;
-                Bonus[CurrentPlayer] = TotalBonus;
-                BonusCountDownEndTime = CurrentTime + 1000;
-            }
+            BonusCountDownEndTime = CurrentTime + 1000;
         }
         LastCountdownReportTime = CurrentTime;
+    }
+
+    if (Display_UpdateDisplays(0xFF, false, false, false))
+    {
+        Audio.StopSound(SOUND_EFFECT_SCORE_TICK);
+        PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
     }
 
     if (CurrentTime > BonusCountDownEndTime)
@@ -2388,6 +2358,7 @@ int CountdownBonus(boolean curStateChanged)
         }
         // Reset any lights & variables of goals that weren't completed
         BonusCountDownEndTime = 0xFFFFFFFF;
+        RPU_EnableSolenoidStack();
         return MACHINE_STATE_BALL_OVER;
     }
 
@@ -2916,6 +2887,26 @@ int RunGamePlayMode(int curState, boolean curStateChanged)
     }
 
     return returnState;
+}
+
+byte GetAdjacentDisplayIndex(byte currentPlayer)
+{
+    if (currentPlayer == 0)
+    {
+        return 1;
+    }
+    else if (currentPlayer == 1)
+    {
+        return 0;
+    }
+    else if (currentPlayer == 2)
+    {
+        return 3;
+    }
+    else
+    {
+        return 4;
+    }
 }
 
 #if (RPU_MPU_ARCHITECTURE >= 10)
