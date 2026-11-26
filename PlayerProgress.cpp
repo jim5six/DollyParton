@@ -136,3 +136,41 @@ void PlayerProgressManager::SpotPartonLetter(uint8_t playerNumber, PartonLetter 
     if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS && letter < PARTON_LETTERS_COUNT)
         PartonLettersProgress[playerNumber][letter] = true;
 }
+
+SongMode PlayerProgressManager::GetLitSongMode(uint8_t playerNumber) const
+{
+    if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS)
+        return litSongMode[playerNumber];
+    return SONG_MODE_NONE;
+}
+
+void PlayerProgressManager::CycleLitSongMode(uint8_t playerNumber)
+{
+    if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS)
+    {
+        litSongMode[playerNumber] = static_cast<SongMode>((litSongMode[playerNumber] + 1) % SONG_MODE_COUNT);
+    }
+}
+
+void PlayerProgressManager::SetSongModePlayed(uint8_t playerNumber, SongMode songMode)
+{
+    if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS && songMode < SONG_MODE_COUNT)
+    {
+        songModesPlayed[playerNumber][songMode] = true;
+    }
+}
+
+bool PlayerProgressManager::HasSongModeBeenPlayed(uint8_t playerNumber, SongMode songMode) const
+{
+    if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS && songMode < SONG_MODE_COUNT)
+        return songModesPlayed[playerNumber][songMode];
+    return false;
+}
+
+void PlayerProgressManager::ResetSongModePlayed(uint8_t playerNumber, SongMode songMode)
+{
+    if (playerNumber < PLAYER_PROGRESS_MAX_PLAYERS && songMode < SONG_MODE_COUNT)
+    {
+        songModesPlayed[playerNumber][songMode] = false;
+    }
+}
