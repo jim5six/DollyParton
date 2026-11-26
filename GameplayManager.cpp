@@ -24,6 +24,7 @@ void GameplayManager::StartBall(uint32_t currentTime, uint32_t playerUp)
     SetMode(GAME_MODE_SKILL_SHOT, currentTime);
     numberOfBallSavesAllowed = 0xFF;
     ballBonusX = 1;
+    spinnerIsLit = false;
 
     for (uint8_t i = 0; i < DOLLY_LETTERS_COUNT; i++)
     {
@@ -62,16 +63,19 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+
     case SW_L_POP_BUMPER:
         AddToCurrentScore(20);
         PlaySoundEffect(SOUND_EFFECT_POP_BASS);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+
     case SW_B_POP_BUMPER:
         AddToCurrentScore(30);
         PlaySoundEffect(SOUND_EFFECT_POP_HIGHHAT);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+
     case SW_LEFT_INLANE:
         if (RPU_ReadLampState(LAMP_L_INLANE))
         {
@@ -84,6 +88,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+
     case SW_RIGHT_INLANE:
         if (RPU_ReadLampState(LAMP_R_INLANE))
         {
@@ -96,6 +101,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+
     case SW_LEFT_OUTLANE:
         if (RPU_ReadLampState(LAMP_L_OUTLANE))
         {
@@ -108,6 +114,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         PlaySoundEffect(SOUND_EFFECT_POP_BASS);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+
     case SW_RIGHT_OUTLANE:
         if (RPU_ReadLampState(LAMP_R_OUTLANE))
         {
@@ -120,59 +127,71 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         PlaySoundEffect(SOUND_EFFECT_POP_BASS);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+
     case SW_LOWER_L_TARGET:
         AddToCurrentScore(500);
         PlaySoundEffect(SOUND_EFFECT_POP_BASS);
+        playerProgress.CycleLitSongMode(currentPlayer);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+
     case SW_LOWER_R_LANE:
         AddToCurrentScore(5000);
         PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+
     case SW_LEFT_SLING:
         AddToCurrentScore(100);
         PlaySoundEffect(SOUND_EFFECT_LEFT_SLING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+
     case SW_RIGHT_SLING:
         AddToCurrentScore(100);
         PlaySoundEffect(SOUND_EFFECT_RIGHT_SLING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+
     case SW_DROP_1:
         AddToCurrentScore(500);
-        RPU_SetLampState(LAMP_SPINNER_1K, 1, 0, 0);
+        spinnerIsLit = true;
         PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+
     case SW_DROP_2:
         AdvanceBonusX();
         AddToCurrentScore(500);
         PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+
     case SW_DROP_3:
         AdvanceBonusX();
         AddToCurrentScore(500);
         PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+
     case SW_DROP_4:
         AdvanceBonusX();
         AddToCurrentScore(500);
         PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+
     case SW_SUPERSTAR:
         AddToCurrentScore(5000);
         PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_COMPLETE);
         RPU_PushToTimedSolenoidStack(SOL_DROP_BANK_RESET, 10, currentTime + 5000, true);
         break;
+
     case SW_RUBBER:
         AddToCurrentScore(30);
         PlaySoundEffect(SOUND_EFFECT_POP_BASS);
         break;
+
     case SW_D:
         if (RPU_ReadLampState(LAMP_1K_DOLLY_TARGET))
         {
@@ -186,6 +205,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         SpotDollyStandupLetter(DOLLY_D);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+
     case SW_O:
         if (RPU_ReadLampState(LAMP_1K_DOLLY_TARGET))
         {
@@ -199,6 +219,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         SpotDollyStandupLetter(DOLLY_O);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+
     case SW_L1:
         if (RPU_ReadLampState(LAMP_1K_DOLLY_TARGET))
         {
@@ -212,6 +233,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         SpotDollyStandupLetter(DOLLY_L1);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+
     case SW_L2:
         if (RPU_ReadLampState(LAMP_1K_DOLLY_TARGET))
         {
@@ -225,6 +247,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         SpotDollyStandupLetter(DOLLY_L2);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+
     case SW_Y:
         if (RPU_ReadLampState(LAMP_1K_DOLLY_TARGET))
         {
@@ -238,8 +261,9 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         SpotDollyStandupLetter(DOLLY_Y);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+
     case SW_SPINNER:
-        if (RPU_ReadLampState(LAMP_SPINNER_1K))
+        if (spinnerIsLit)
         {
             AddToCurrentScore(1000);
             PlaySoundEffect(SOUND_EFFECT_SPINNER);
@@ -248,9 +272,11 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             AddToCurrentScore(100);
             PlaySoundEffect(SOUND_EFFECT_SPINNER);
-            ValidateAndRegisterPlayfieldSwitch(currentTime);
         }
+    
+        ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
+        
     case SW_SAUCER:
         if (currentMode != GAME_MODE_SKILL_SHOT)
         {
@@ -300,6 +326,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
 void GameplayManager::ShowGameplayLamps(uint32_t currentTime)
 {
     ShowShootAgainLamp(currentTime);
+    ShowSpinnerLamp();
     ShowDollyTargetLamps();
     ShowDollyBonusLamps();
     ShowBonusXLamps();
@@ -343,6 +370,11 @@ void GameplayManager::ShowShootAgainLamp(uint32_t currentTime)
     {
         RPU_SetLampState(LAMP_SHOOT_AGAIN, samePlayerShootsAgain);
     }
+}
+
+void GameplayManager::ShowSpinnerLamp()
+{
+    RPU_SetLampState(LAMP_SPINNER_1K, spinnerIsLit, 0, 0);
 }
 
 void GameplayManager::ShowDollyTargetLamps()

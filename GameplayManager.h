@@ -46,6 +46,7 @@ private:
     uint8_t numberOfBallSavesRemaining = 0;
     byte playfieldMultiplier = 1;
     bool samePlayerShootsAgain = false;
+    bool spinnerIsLit = false;
 
     uint32_t lastSwitchHitTime = 0;
     uint32_t ballFirstSwitchHitTime = 0;
@@ -61,6 +62,7 @@ private:
     GameplayManager &operator=(const GameplayManager &);
     
     void ShowShootAgainLamp(uint32_t currentTime);
+    void ShowSpinnerLamp();
     void ShowDollyTargetLamps();
     void ShowDollyBonusLamps();
     void LightPartonBonusLamps();
