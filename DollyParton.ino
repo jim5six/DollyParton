@@ -842,11 +842,11 @@ boolean AddPlayer(boolean resetNumPlayers = false)
     CurrentNumPlayers += 1;
     RPU_SetDisplay(CurrentNumPlayers - 1, 0, true, 2);
 
-    if (CurrentNumPlayers > 1)
-    {
-        // If this is second, third, or fourth player, then playe the announcment
-        QueueNotification(SOUND_EFFECT_VP_ADD_PLAYER_1 + (CurrentNumPlayers - 1), 10);
-    }
+    //if (CurrentNumPlayers > 1)
+    //{
+    //    // If this is second, third, or fourth player, then playe the announcment
+    //    QueueNotification(SOUND_EFFECT_VP_ADD_PLAYER_1 + (CurrentNumPlayers - 1), 10);
+    //}
 
     if (!FreePlayMode)
     {

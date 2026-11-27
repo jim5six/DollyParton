@@ -153,7 +153,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
 
     case SW_B_POP_BUMPER:
         AddToCurrentScore(30);
-        PlaySoundEffect(SOUND_EFFECT_POP_HIGHHAT);
+        PlaySoundEffect(SOUND_EFFECT_HIGHHAT);
         if (activeSong == SOUND_EFFECT_HIGH_HAT)
         {
             AddToSongBonus(200);
