@@ -133,7 +133,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
 
     case SW_T_POP_BUMPER:
         AddToCurrentScore(10);
-        PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+        PlaySoundEffect(SOUND_EFFECT_SNARE);
         if (activeSong == SONG_MODE_JOLENE)
         {
             AddToSongBonus(200);
@@ -144,7 +144,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
     case SW_L_POP_BUMPER:
         AddToCurrentScore(20);
         PlaySoundEffect(SOUND_EFFECT_POP_BASS);
-        if (activeSong == SONG_MODE_JOLENE)
+        if (activeSong == SOUND_EFFECT_BASS)
         {
             AddToSongBonus(200);
         }
@@ -154,7 +154,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
     case SW_B_POP_BUMPER:
         AddToCurrentScore(30);
         PlaySoundEffect(SOUND_EFFECT_POP_HIGHHAT);
-        if (activeSong == SONG_MODE_JOLENE)
+        if (activeSong == SOUND_EFFECT_HIGH_HAT)
         {
             AddToSongBonus(200);
         }
@@ -170,7 +170,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             AddToCurrentScore(600);
         }
-        PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+        PlaySoundEffect(SOUND_EFFECT_LOW_E_STRING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
@@ -183,7 +183,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             AddToCurrentScore(600);
         }
-        PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+        PlaySoundEffect(SOUND_EFFECT_LOW_E_STRING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
@@ -196,7 +196,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             AddToCurrentScore(1000);
         }
-        PlaySoundEffect(SOUND_EFFECT_POP_BASS);
+        PlaySoundEffect(SOUND_EFFECT_BASS);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
@@ -209,13 +209,13 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             AddToCurrentScore(1000);
         }
-        PlaySoundEffect(SOUND_EFFECT_POP_BASS);
+        PlaySoundEffect(SOUND_EFFECT_BASS);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
     case SW_LOWER_L_TARGET:
         AddToCurrentScore(500);
-        PlaySoundEffect(SOUND_EFFECT_POP_BASS);
+        PlaySoundEffect(SOUND_EFFECT_G_STRING);
         if (!SongModeIsActve())
         {
             playerProgress.CycleLitSongMode(currentPlayer);
@@ -231,26 +231,29 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
             songBonusAwarding = true; 
             nextSongBonusAwardTime = currentTime + songAwardCountdownInterval;
         }
-        PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+        else
+        {
+            PlaySoundEffect(SOUND_EFFECT_HIGH_E_STRING);
+        }
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
     case SW_LEFT_SLING:
         AddToCurrentScore(100);
-        PlaySoundEffect(SOUND_EFFECT_LEFT_SLING);
+        PlaySoundEffect(SOUND_EFFECT_A_STRING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
     case SW_RIGHT_SLING:
         AddToCurrentScore(100);
-        PlaySoundEffect(SOUND_EFFECT_RIGHT_SLING);
+        PlaySoundEffect(SOUND_EFFECT_B_STRING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
     case SW_DROP_1:
         AddToCurrentScore(500);
         spinnerIsLit = true;
-        PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
+        PlaySoundEffect(SOUND_EFFECT_G_STRING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
@@ -258,7 +261,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         AdvanceBonusX();
         if (SongModeIsActve()) { AdvanceSongBonusX(); }
         AddToCurrentScore(500);
-        PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
+        PlaySoundEffect(SOUND_EFFECT_A_STRING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
@@ -266,7 +269,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         AdvanceBonusX();
         if (SongModeIsActve()) { AdvanceSongBonusX(); }
         AddToCurrentScore(500);
-        PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
+        PlaySoundEffect(SOUND_EFFECT_B_STRING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
@@ -274,13 +277,13 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         AdvanceBonusX();
         if (SongModeIsActve()) { AdvanceSongBonusX(); }
         AddToCurrentScore(500);
-        PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
+        PlaySoundEffect(SOUND_EFFECT_HIGH_E_STRING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
     case SW_SUPERSTAR:
         AddToCurrentScore(5000);
-        PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_COMPLETE);
+        PlaySoundEffect(SOUND_EFFECT_SONG_MODE_START);
         RPU_PushToTimedSolenoidStack(SOL_DROP_BANK_RESET, 10, currentTime + 5000, true);
 
         if (!SongModeIsActve())
@@ -291,7 +294,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
 
     case SW_RUBBER:
         AddToCurrentScore(30);
-        PlaySoundEffect(SOUND_EFFECT_POP_BASS);
+        PlaySoundEffect(SOUND_EFFECT_SNARE);
         break;
 
     case SW_D:
@@ -303,7 +306,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             AddToCurrentScore(400);
         }
-        PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+        PlaySoundEffect(SOUND_EFFECT_LOW_E_STRING);
         SpotDollyStandupLetter(DOLLY_D);
 
         ValidateAndRegisterPlayfieldSwitch(currentTime);
@@ -318,7 +321,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             AddToCurrentScore(400);
         }
-        PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+        PlaySoundEffect(SOUND_EFFECT_G_STRING);
         SpotDollyStandupLetter(DOLLY_O);
 
         ValidateAndRegisterPlayfieldSwitch(currentTime);
@@ -333,7 +336,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             AddToCurrentScore(400);
         }
-        PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+        PlaySoundEffect(SOUND_EFFECT_A_STRING);
         SpotDollyStandupLetter(DOLLY_L1);
 
         ValidateAndRegisterPlayfieldSwitch(currentTime);
@@ -348,7 +351,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             AddToCurrentScore(400);
         }
-        PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+        PlaySoundEffect(SOUND_EFFECT_B_STRING);
         SpotDollyStandupLetter(DOLLY_L2);
 
         ValidateAndRegisterPlayfieldSwitch(currentTime);
@@ -363,7 +366,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             AddToCurrentScore(400);
         }
-        PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+        PlaySoundEffect(SOUND_EFFECT_HIGH_E_STRING);
         SpotDollyStandupLetter(DOLLY_Y);
 
         ValidateAndRegisterPlayfieldSwitch(currentTime);
@@ -373,12 +376,12 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         if (spinnerIsLit)
         {
             AddToCurrentScore(1000);
-            PlaySoundEffect(SOUND_EFFECT_SPINNER);
+            PlaySoundEffect(SOUND_EFFECT_HIGH_E_STRING);
         }
         else
         {
             AddToCurrentScore(100);
-            PlaySoundEffect(SOUND_EFFECT_SPINNER);
+            PlaySoundEffect(SOUND_EFFECT_LOW_E_STRING);
         }
         if (activeSong == SONG_MODE_JOLENE)
         {
@@ -392,14 +395,14 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         if (currentMode != GAME_MODE_SKILL_SHOT)
         {
             AddToCurrentScore(1000);
-            PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+            PlaySoundEffect(SOUND_EFFECT_SNARE);
             RPU_PushToTimedSolenoidStack(SOL_SAUCER, 10, currentTime + 1000, true);
             ValidateAndRegisterPlayfieldSwitch(currentTime);
         }
         else
         {
             AddToCurrentScore(1000);
-            PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
+            PlaySoundEffect(SOUND_EFFECT_LOW_E_STRING);
             RPU_PushToTimedSolenoidStack(SOL_SAUCER, 10, currentTime + 1000, true);
             ValidateAndRegisterPlayfieldSwitch(currentTime);
             SetMode(GAME_MODE_UNSTRUCTURED_PLAY, currentTime);
@@ -644,7 +647,7 @@ void GameplayManager::AdvanceSongBonusX()
 void GameplayManager::StartSongMode(uint32_t currentTime)
 {
     showNextSongDisplayEnd = 0;
-    
+
     SetMode(GAME_MODE_SONG);
     activeSong = playerProgress.GetLitSongMode(currentPlayer);
 
