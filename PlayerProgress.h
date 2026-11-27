@@ -11,10 +11,10 @@
 enum SongMode
     {
         SONG_MODE_JOLENE = 0,           // Pop bumpers
-        SONG_MODE_9_TO_5,               // Spinner
         SONG_MODE_COAT_OF_MANY_COLORS,  // Saucer
-        SONG_MODE_BABY_IM_BURNIN,       // Inlines
-        SONG_MODE_IM_GONE,              // Stand-ups
+        SONG_MODE_JOSHUA,               // Spinner
+        SONG_MODE_ISLANDS,              // Inlines
+        SONG_MODE_DUMB_BLONDE,          // Stand-ups
         SONG_MODE_COUNT,
         SONG_MODE_NONE,
     };

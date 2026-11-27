@@ -103,7 +103,9 @@ bool GameplayManager::ManageGameMode(uint32_t currentTime)
 
             if (songBonusesAwarded == maxSongBonusesAllowed)
             {
-
+                audio.QueuePrioritizedNotification(SOUND_EFFECT_SONG_MODE_COMPLETE, 0, 10, currentTime);
+                SetMode(GAME_MODE_UNSTRUCTURED_PLAY, currentTime);
+                activeSong = SONG_MODE_NONE;
             }
         }
     }
@@ -220,6 +222,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             playerProgress.CycleLitSongMode(currentPlayer);
             showNextSongDisplayEnd = currentTime + showSongDisplayTimeMs;
+            audio.QueuePrioritizedNotification(SOUND_EFFECT_SONG_MODE_CHANGED, 0, 10, currentTime);
         }
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
@@ -383,7 +386,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
             AddToCurrentScore(100);
             PlaySoundEffect(SOUND_EFFECT_LOW_E_STRING);
         }
-        if (activeSong == SONG_MODE_JOLENE)
+        if (activeSong == SONG_MODE_JOSHUA)
         {
             AddToSongBonus(200);
         }
@@ -651,8 +654,10 @@ void GameplayManager::StartSongMode(uint32_t currentTime)
     SetMode(GAME_MODE_SONG, currentTime);
     activeSong = playerProgress.GetLitSongMode(currentPlayer);
 
-    //Start the actual song
-    //audioHandler.PlayBackgroundSong(SONG_EFFECT_TODO);
+    audio.QueuePrioritizedNotification(SOUND_EFFECT_SONG_MODE_START, 0, 10, currentTime);
+
+    uint8_t songNum = static_cast<uint8_t>(activeSong);
+    audio.PlayBackgroundSong(SOUND_EFFECT_JOLENE + songNum);
 }
 
 bool GameplayManager::SongModeIsActive()
