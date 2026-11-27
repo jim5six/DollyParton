@@ -9,13 +9,13 @@
 
 class GameplayManager {
 public:
-    static GameplayManager &Instance(AudioHandler &audio);
+    static GameplayManager &Instance(AudioHandler &audioHandler);
 
     // Functions that are called by the main loop to manage gameplay
     // Eventually we should condense most of these into one call that happens per loop
     void StartBall(uint32_t currentTime, uint32_t playerUp);
     void EndBall(uint32_t currentTime);
-    static byte GetAdjacentDisplayIndex(byte currentPlayer)
+    static byte GetAdjacentDisplayIndex(byte currentPlayer);
     bool ManageGameMode(uint32_t currentTime);
     void HandleGameplaySwitches(byte switchHit, uint32_t currentTime);
     void ShowGameplayLamps(uint32_t currentTime);
@@ -69,7 +69,7 @@ private:
     bool ballDollyStandupProgress[DOLLY_LETTERS_COUNT];
     uint8_t ballBonusX;
 
-    AudioHandler &audioHandler;
+    AudioHandler &audio;
     PlayerProgressManager &playerProgress = PlayerProgressManager::Instance();
 
     explicit GameplayManager(AudioHandler &audio);
@@ -87,13 +87,13 @@ private:
     void AddToCurrentScore(uint32_t points, bool useMultiplier = true);
     void AddToSongBonus(uint32_t points, bool useMultiplier = true);
     void ValidateAndRegisterPlayfieldSwitch(uint32_t currentTime);
-    void PlaySoundEffect(unsigned short soundIndex) { audioHandler.PlaySound(soundIndex, AUDIO_PLAY_TYPE_WAV_TRIGGER); }
+    void PlaySoundEffect(unsigned short soundIndex) { audio.PlaySound(soundIndex, AUDIO_PLAY_TYPE_WAV_TRIGGER); }
 
     void SpotDollyStandupLetter(DollyLetter letter);
     void AdvanceBonusX();
     void AdvanceSongBonusX();
     void StartSongMode(uint32_t currentTime);
-    bool SongModeIsActve();
+    bool SongModeIsActive();
 
     void SetMode(GameMode newMode, uint32_t currentTime) {
         currentMode = newMode;

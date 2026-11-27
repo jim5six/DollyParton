@@ -11,8 +11,8 @@ GameplayManager &GameplayManager::Instance(AudioHandler &audio)
     return instance;
 }
 
-GameplayManager::GameplayManager(AudioHandler &audio)
-    : audioHandler(audio)
+GameplayManager::GameplayManager(AudioHandler &audioHandler)
+    : audio(audioHandler)
 {
 }
 
@@ -43,7 +43,7 @@ void GameplayManager::EndBall(uint32_t currentTime)
 {
     // Do this just so we are sure to leave a song mode
     SetMode(GAME_MODE_UNSTRUCTURED_PLAY, currentTime);
-    AudioHandler.StopAllMusic();
+    audio.StopAllMusic();
 }
 
 // Get the index of the available display to the left or right.
@@ -108,7 +108,7 @@ bool GameplayManager::ManageGameMode(uint32_t currentTime)
         }
     }
 
-    if (SongModeIsActve())
+    if (SongModeIsActive())
     {
         Display_OverrideScoreDisplay(GetAdjacentDisplayIndex(currentPlayer), accumulatedSongBonus, 0);
     }
@@ -116,11 +116,11 @@ bool GameplayManager::ManageGameMode(uint32_t currentTime)
     {
         if (currentTime < showNextSongDisplayEnd)
         {
-            uint8_t songNum = static_cast<uint8_t>GetLitSongMode(currentPlayer);
+            uint8_t songNum = static_cast<uint8_t>(playerProgress.GetLitSongMode(currentPlayer));
             Display_OverrideScoreDisplay(GetAdjacentDisplayIndex(currentPlayer), accumulatedSongBonus, 500 + songNum);
         }
         // Not sure if I should be calling this all the time...but let's do it for now.
-        Display_ClearOverride(GameplayManager::GetAdjacentDisplayIndex(CurrentPlayer));
+        Display_ClearOverride(GameplayManager::GetAdjacentDisplayIndex(currentPlayer));
     }
 
     return true;
@@ -216,7 +216,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
     case SW_LOWER_L_TARGET:
         AddToCurrentScore(500);
         PlaySoundEffect(SOUND_EFFECT_G_STRING);
-        if (!SongModeIsActve())
+        if (!SongModeIsActive())
         {
             playerProgress.CycleLitSongMode(currentPlayer);
             showNextSongDisplayEnd = currentTime + showSongDisplayTimeMs;
@@ -226,7 +226,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
 
     case SW_LOWER_R_LANE:
         AddToCurrentScore(5000);
-        if (SongModeIsActve) 
+        if (SongModeIsActive()) 
         { 
             songBonusAwarding = true; 
             nextSongBonusAwardTime = currentTime + songAwardCountdownInterval;
@@ -259,7 +259,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
 
     case SW_DROP_2:
         AdvanceBonusX();
-        if (SongModeIsActve()) { AdvanceSongBonusX(); }
+        if (SongModeIsActive()) { AdvanceSongBonusX(); }
         AddToCurrentScore(500);
         PlaySoundEffect(SOUND_EFFECT_A_STRING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
@@ -267,7 +267,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
 
     case SW_DROP_3:
         AdvanceBonusX();
-        if (SongModeIsActve()) { AdvanceSongBonusX(); }
+        if (SongModeIsActive()) { AdvanceSongBonusX(); }
         AddToCurrentScore(500);
         PlaySoundEffect(SOUND_EFFECT_B_STRING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
@@ -275,7 +275,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
 
     case SW_DROP_4:
         AdvanceBonusX();
-        if (SongModeIsActve()) { AdvanceSongBonusX(); }
+        if (SongModeIsActive()) { AdvanceSongBonusX(); }
         AddToCurrentScore(500);
         PlaySoundEffect(SOUND_EFFECT_HIGH_E_STRING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
@@ -286,7 +286,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         PlaySoundEffect(SOUND_EFFECT_SONG_MODE_START);
         RPU_PushToTimedSolenoidStack(SOL_DROP_BANK_RESET, 10, currentTime + 5000, true);
 
-        if (!SongModeIsActve())
+        if (!SongModeIsActive())
         {
             StartSongMode(currentTime);
         }
@@ -509,7 +509,7 @@ void GameplayManager::ShowDollyBonusLamps()
 
 void GameplayManager::ShowBonusXLamps()
 {
-    if (SongModeIsActve())
+    if (SongModeIsActive())
     {
         RPU_SetLampState(LAMP_2X_BONUS, songBonusX >= 2 ? 1 : 0, 0, 250);
         RPU_SetLampState(LAMP_3X_BONUS, songBonusX >= 3 ? 1 : 0, 0, 250);
@@ -581,9 +581,9 @@ void GameplayManager::AddToCurrentScore(uint32_t points, bool useMultiplier)
     playerProgress.AddScore(currentPlayer, actualPoints);
 }
 
-void AddToSongBonus(uint32_t points, bool useMultiplier = true)
+void GameplayManager::AddToSongBonus(uint32_t points, bool useMultiplier = true)
 {
-    uint32_t actualPoints = useMultiplier ? points * playfieldMultiplier : points;
+    uint32_t actualPoints = useMultiplier ? points * songBonusX : points;
     accumulatedSongBonus += actualPoints;
 }
 
@@ -648,14 +648,14 @@ void GameplayManager::StartSongMode(uint32_t currentTime)
 {
     showNextSongDisplayEnd = 0;
 
-    SetMode(GAME_MODE_SONG);
+    SetMode(GAME_MODE_SONG, currentTime);
     activeSong = playerProgress.GetLitSongMode(currentPlayer);
 
     //Start the actual song
     //audioHandler.PlayBackgroundSong(SONG_EFFECT_TODO);
 }
 
-bool GameplayManager::SongModeIsActve()
+bool GameplayManager::SongModeIsActive()
 {
     return (activeSong != SONG_MODE_NONE && activeSong != SONG_MODE_COUNT);
 }
