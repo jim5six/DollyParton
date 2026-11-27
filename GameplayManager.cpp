@@ -38,6 +38,13 @@ void GameplayManager::StartBall(uint32_t currentTime, uint32_t playerUp)
     }
 }
 
+void GameplayManager::EndBall(uint32_t currentTime)
+{
+    // Do this just so we are sure to leave a song mode
+    SetMode(GAME_MODE_UNSTRUCTURED_PLAY, currentTime);
+    AudioHandler.StopAllMusic();
+}
+
 // Get the index of the available display to the left or right.
 static byte GameplayManager::GetAdjacentDisplayIndex(byte currentPlayer)
 {
@@ -95,7 +102,7 @@ bool GameplayManager::ManageGameMode(uint32_t currentTime)
 
             if (songBonusesAwarded == maxSongBonusesAllowed)
             {
-                
+
             }
         }
     }
@@ -489,9 +496,18 @@ void GameplayManager::ShowDollyBonusLamps()
 
 void GameplayManager::ShowBonusXLamps()
 {
-    RPU_SetLampState(LAMP_2X_BONUS, ballBonusX >= 2 ? 1 : 0);
-    RPU_SetLampState(LAMP_3X_BONUS, ballBonusX >= 3 ? 1 : 0);
-    RPU_SetLampState(LAMP_5X_BONUS, ballBonusX >= 5 ? 1 : 0);
+    if (SongModeIsActve())
+    {
+        RPU_SetLampState(LAMP_2X_BONUS, songBonusX >= 2 ? 1 : 0, 0, 250);
+        RPU_SetLampState(LAMP_3X_BONUS, songBonusX >= 3 ? 1 : 0, 0, 250);
+        RPU_SetLampState(LAMP_5X_BONUS, songBonusX >= 5 ? 1 : 0, 0, 250);
+    }
+    else 
+    {
+        RPU_SetLampState(LAMP_2X_BONUS, ballBonusX >= 2 ? 1 : 0);
+        RPU_SetLampState(LAMP_3X_BONUS, ballBonusX >= 3 ? 1 : 0);
+        RPU_SetLampState(LAMP_5X_BONUS, ballBonusX >= 5 ? 1 : 0);
+    }
 }
 
 void GameplayManager::LightPartonBonusLamps()

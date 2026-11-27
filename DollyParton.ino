@@ -2260,6 +2260,7 @@ int ManageGameMode()
                             Display_ClearOverride(0xFF);
                             Audio.StopAllAudio();
                             // PlaySoundEffect(SOUND_EFFECT_);
+                            gameManager.EndBall(CurrentTime);
                             returnState = MACHINE_STATE_COUNTDOWN_BONUS;
                         }
                     }

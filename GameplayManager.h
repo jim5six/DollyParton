@@ -14,6 +14,7 @@ public:
     // Functions that are called by the main loop to manage gameplay
     // Eventually we should condense most of these into one call that happens per loop
     void StartBall(uint32_t currentTime, uint32_t playerUp);
+    void EndBall(uint32_t currentTime);
     static byte GetAdjacentDisplayIndex(byte currentPlayer)
     bool ManageGameMode(uint32_t currentTime);
     void HandleGameplaySwitches(byte switchHit, uint32_t currentTime);
