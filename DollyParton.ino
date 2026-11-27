@@ -2319,7 +2319,7 @@ int CountdownBonus(boolean curStateChanged)
 
     const unsigned long countdownDelayTime = 130;
 
-    Display_OverrideScoreDisplay(GetAdjacentDisplayIndex(CurrentPlayer), TotalBonus * 1000, 0);
+    Display_OverrideScoreDisplay(GameplayManager::GetAdjacentDisplayIndex(CurrentPlayer), TotalBonus * 1000, 0);
 
     if ((CurrentTime - LastCountdownReportTime) > countdownDelayTime)
     {
@@ -2357,6 +2357,7 @@ int CountdownBonus(boolean curStateChanged)
         // Reset any lights & variables of goals that weren't completed
         BonusCountDownEndTime = 0xFFFFFFFF;
         RPU_EnableSolenoidStack();
+        Display_ClearOverride(GameplayManager::GetAdjacentDisplayIndex(CurrentPlayer));
         return MACHINE_STATE_BALL_OVER;
     }
 
@@ -2885,27 +2886,6 @@ int RunGamePlayMode(int curState, boolean curStateChanged)
     }
 
     return returnState;
-}
-
-// Get the index of the available display to the left or right.
-byte GetAdjacentDisplayIndex(byte currentPlayer)
-{
-    if (currentPlayer == 0)
-    {
-        return 1;
-    }
-    else if (currentPlayer == 1)
-    {
-        return 0;
-    }
-    else if (currentPlayer == 2)
-    {
-        return 3;
-    }
-    else
-    {
-        return 4;
-    }
 }
 
 // Sync the global score count with the PlayerManager. Eventually we will just use the player manager throughout.

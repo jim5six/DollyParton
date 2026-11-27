@@ -1,6 +1,7 @@
 #include "GameplayManager.h"
 #include "RPU.h"
 #include "DollyParton.h"
+#include "DisplayHandler.h"
 #include "SoundIDs.h"
 #include "LampAnimationAPI.h"
 
@@ -24,11 +25,37 @@ void GameplayManager::StartBall(uint32_t currentTime, uint32_t playerUp)
     SetMode(GAME_MODE_SKILL_SHOT, currentTime);
     numberOfBallSavesAllowed = 0xFF;
     ballBonusX = 1;
+    songBonusX = 1;
     spinnerIsLit = false;
+    activeSong = SONG_MODE_NONE;
+    accumulatedSongBonus = 0;
+    songBonusAwarding = false;
+    nextSongBonusAwardTime = 0;
 
     for (uint8_t i = 0; i < DOLLY_LETTERS_COUNT; i++)
     {
         ballDollyStandupProgress[i] = false;
+    }
+}
+
+// Get the index of the available display to the left or right.
+static byte GameplayManager::GetAdjacentDisplayIndex(byte currentPlayer)
+{
+    if (currentPlayer == 0)
+    {
+        return 1;
+    }
+    else if (currentPlayer == 1)
+    {
+        return 0;
+    }
+    else if (currentPlayer == 2)
+    {
+        return 3;
+    }
+    else
+    {
+        return 4;
     }
 }
 
@@ -50,6 +77,39 @@ bool GameplayManager::ManageGameMode(uint32_t currentTime)
         }
     }
 
+    // Trickle the song award bonus over to score if it's awarding
+    if (songBonusAwarding && nextSongBonusAwardTime && currentTime >= nextSongBonusAwardTime && accumulatedSongBonus > 0)
+    {
+        // TODO: Play a noise here, like applause?
+
+        uint32_t awardAmount = (accumulatedSongBonus >= songAwardScoreTick) ? songAwardScoreTick : accumulatedSongBonus;
+        accumulatedSongBonus -= awardAmount;
+        AddToCurrentScore(awardAmount, false);
+        nextSongBonusAwardTime = currentTime + songAwardCountdownInterval;
+
+        if (accumulatedSongBonus == 0)
+        {
+            nextSongBonusAwardTime = 0;
+            songBonusAwarding = false;
+            songBonusesAwarded += 1;
+
+            if (songBonusesAwarded == maxSongBonusesAllowed)
+            {
+                
+            }
+        }
+    }
+
+    if (SongModeIsActve())
+    {
+        Display_OverrideScoreDisplay(GetAdjacentDisplayIndex(currentPlayer), accumulatedSongBonus, 0);
+    }
+    else
+    {
+        // Not sure if I should be calling this all the time...but let's do it for now.
+        Display_ClearOverride(GameplayManager::GetAdjacentDisplayIndex(CurrentPlayer));
+    }
+
     return true;
 }
 
@@ -61,18 +121,30 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
     case SW_T_POP_BUMPER:
         AddToCurrentScore(10);
         PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
+        if (activeSong == SONG_MODE_JOLENE)
+        {
+            AddToSongBonus(200);
+        }
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
     case SW_L_POP_BUMPER:
         AddToCurrentScore(20);
         PlaySoundEffect(SOUND_EFFECT_POP_BASS);
+        if (activeSong == SONG_MODE_JOLENE)
+        {
+            AddToSongBonus(200);
+        }
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
     case SW_B_POP_BUMPER:
         AddToCurrentScore(30);
         PlaySoundEffect(SOUND_EFFECT_POP_HIGHHAT);
+        if (activeSong == SONG_MODE_JOLENE)
+        {
+            AddToSongBonus(200);
+        }
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
@@ -137,6 +209,11 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
 
     case SW_LOWER_R_LANE:
         AddToCurrentScore(5000);
+        if (SongModeIsActve) 
+        { 
+            songBonusAwarding = true; 
+            nextSongBonusAwardTime = currentTime + songAwardCountdownInterval;
+        }
         PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
@@ -162,6 +239,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
 
     case SW_DROP_2:
         AdvanceBonusX();
+        if (SongModeIsActve()) { AdvanceSongBonusX(); }
         AddToCurrentScore(500);
         PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
@@ -169,6 +247,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
 
     case SW_DROP_3:
         AdvanceBonusX();
+        if (SongModeIsActve()) { AdvanceSongBonusX(); }
         AddToCurrentScore(500);
         PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
@@ -176,6 +255,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
 
     case SW_DROP_4:
         AdvanceBonusX();
+        if (SongModeIsActve()) { AdvanceSongBonusX(); }
         AddToCurrentScore(500);
         PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_SOUND_1);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
@@ -185,6 +265,11 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         AddToCurrentScore(5000);
         PlaySoundEffect(SOUND_EFFECT_DROP_TARGET_COMPLETE);
         RPU_PushToTimedSolenoidStack(SOL_DROP_BANK_RESET, 10, currentTime + 5000, true);
+
+        if (!SongModeIsActve())
+        {
+            StartSongMode(currentTime);
+        }
         break;
 
     case SW_RUBBER:
@@ -203,6 +288,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         }
         PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
         SpotDollyStandupLetter(DOLLY_D);
+
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
@@ -217,6 +303,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         }
         PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
         SpotDollyStandupLetter(DOLLY_O);
+
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
@@ -231,6 +318,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         }
         PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
         SpotDollyStandupLetter(DOLLY_L1);
+
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
@@ -245,6 +333,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         }
         PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
         SpotDollyStandupLetter(DOLLY_L2);
+
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
@@ -259,6 +348,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         }
         PlaySoundEffect(SOUND_EFFECT_POP_SNARE);
         SpotDollyStandupLetter(DOLLY_Y);
+
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
@@ -272,6 +362,10 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             AddToCurrentScore(100);
             PlaySoundEffect(SOUND_EFFECT_SPINNER);
+        }
+        if (activeSong == SONG_MODE_JOLENE)
+        {
+            AddToSongBonus(200);
         }
     
         ValidateAndRegisterPlayfieldSwitch(currentTime);
@@ -458,6 +552,12 @@ void GameplayManager::AddToCurrentScore(uint32_t points, bool useMultiplier)
     playerProgress.AddScore(currentPlayer, actualPoints);
 }
 
+void AddToSongBonus(uint32_t points, bool useMultiplier = true)
+{
+    uint32_t actualPoints = useMultiplier ? points * playfieldMultiplier : points;
+    accumulatedSongBonus += actualPoints;
+}
+
 void GameplayManager::SpotDollyStandupLetter(DollyLetter letter)
 {
     ballDollyStandupProgress[letter] = true;
@@ -497,4 +597,34 @@ void GameplayManager::AdvanceBonusX()
     {
         ballBonusX = 5;
     }
+}
+
+void GameplayManager::AdvanceSongBonusX()
+{
+    if (songBonusX == 1)
+    {
+        songBonusX = 2;
+    }
+    else if (songBonusX == 2)
+    {
+        songBonusX = 3;
+    }
+    else
+    {
+        songBonusX = 5;
+    }
+}
+
+void GameplayManager::StartSongMode(uint32_t currentTime)
+{
+    SetMode(GAME_MODE_SONG);
+    activeSong = playerProgress.GetLitSongMode(currentPlayer);
+
+    //Start the actual song
+    //audioHandler.PlayBackgroundSong(SONG_EFFECT_TODO);
+}
+
+bool GameplayManager::SongModeIsActve()
+{
+    return (activeSong != SONG_MODE_NONE && activeSong != SONG_MODE_COUNT);
 }

@@ -10,11 +10,11 @@
 
 enum SongMode
     {
-        SONG_MODE_JOLENE = 0,
-        SONG_MODE_9_TO_5,
-        SONG_MODE_COAT_OF_MANY_COLORS,
-        SONG_MODE_BABY_IM_BURNIN,
-        SONG_MODE_IM_GONE,
+        SONG_MODE_JOLENE = 0,           // Pop bumpers
+        SONG_MODE_9_TO_5,               // Spinner
+        SONG_MODE_COAT_OF_MANY_COLORS,  // Saucer
+        SONG_MODE_BABY_IM_BURNIN,       // Inlines
+        SONG_MODE_IM_GONE,              // Stand-ups
         SONG_MODE_COUNT,
         SONG_MODE_NONE,
     };
@@ -55,7 +55,7 @@ private:
     PlayerProgressManager &operator=(const PlayerProgressManager &);
 
     uint32_t score[PLAYER_PROGRESS_MAX_PLAYERS];
-    uint8_t bonus[PLAYER_PROGRESS_MAX_PLAYERS];
+    uint8_t bonus[PLAYER_PROGRESS_MAX_PLAYERS]; //Bonus here is 1 per 1000 bonus
     uint8_t bonusMultiplier[PLAYER_PROGRESS_MAX_PLAYERS];
     uint8_t modeProgress[PLAYER_PROGRESS_MAX_PLAYERS];
     SongMode litSongMode[PLAYER_PROGRESS_MAX_PLAYERS];

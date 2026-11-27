@@ -29,6 +29,8 @@ void PlayerProgressManager::ResetGame()
         {
             PartonLettersProgress[player][letter] = 0;
         }
+
+        litSongMode[player] = SONG_MODE_JOLENE;
     }
 }
 

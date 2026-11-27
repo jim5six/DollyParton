@@ -14,6 +14,7 @@ public:
     // Functions that are called by the main loop to manage gameplay
     // Eventually we should condense most of these into one call that happens per loop
     void StartBall(uint32_t currentTime, uint32_t playerUp);
+    static byte GetAdjacentDisplayIndex(byte currentPlayer)
     bool ManageGameMode(uint32_t currentTime);
     void HandleGameplaySwitches(byte switchHit, uint32_t currentTime);
     void ShowGameplayLamps(uint32_t currentTime);
@@ -32,19 +33,30 @@ private:
     {
         GAME_MODE_SKILL_SHOT,
         GAME_MODE_UNSTRUCTURED_PLAY,
+        GAME_MODE_SONG
     };
 
     const uint32_t skillShotDurationMs = 10000;
+    const uint32_t songAwardCountdownInterval = 100;
+    const uint32_t songAwardScoreTick = 200;
 
     uint8_t currentPlayer;                  // Current player number (0-based index)
     GameMode currentMode;                   // The current game mode
     uint32_t currentModeStartTime;          // The time when the current game mode started
 
+    SongMode activeSong = SONG_MODE_NONE;
+    uint32_t accumulatedSongBonus = 0;
+    uint8_t songBonusX = 1;
+    uint8_t songBonusesAwarded = 0;
+    const uint8_t maxSongBonusesAllowed = 3;
+    bool songBonusAwarding = false;
+    uint32_t nextSongBonusAwardTime = 0;
+
     uint32_t ballSaveDurationMs = 15000;     // Duration of the ball save in milliseconds;
     uint32_t ballSaveEndTime = 0;
     uint8_t numberOfBallSavesAllowed = 0xFF;
     uint8_t numberOfBallSavesRemaining = 0;
-    byte playfieldMultiplier = 1;
+    uint8_t playfieldMultiplier = 1;
     bool samePlayerShootsAgain = false;
     bool spinnerIsLit = false;
 
@@ -68,12 +80,17 @@ private:
     void LightPartonBonusLamps();
     void ShowPartonBonusLamps();
     void ShowBonusXLamps();
+
     void AddToCurrentScore(uint32_t points, bool useMultiplier = true);
+    void AddToSongBonus(uint32_t points, bool useMultiplier = true);
     void ValidateAndRegisterPlayfieldSwitch(uint32_t currentTime);
     void PlaySoundEffect(unsigned short soundIndex) { audioHandler.PlaySound(soundIndex, AUDIO_PLAY_TYPE_WAV_TRIGGER); }
 
     void SpotDollyStandupLetter(DollyLetter letter);
     void AdvanceBonusX();
+    void AdvanceSongBonusX();
+    void StartSongMode(uint32_t currentTime);
+    bool SongModeIsActve();
 
     void SetMode(GameMode newMode, uint32_t currentTime) {
         currentMode = newMode;
