@@ -143,7 +143,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
 
     case SW_L_POP_BUMPER:
         AddToCurrentScore(20);
-        PlaySoundEffect(SOUND_EFFECT_POP_BASS);
+        PlaySoundEffect(SOUND_EFFECT_BASS);
         if (activeSong == SOUND_EFFECT_BASS)
         {
             AddToSongBonus(200);
@@ -154,7 +154,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
     case SW_B_POP_BUMPER:
         AddToCurrentScore(30);
         PlaySoundEffect(SOUND_EFFECT_HIGHHAT);
-        if (activeSong == SOUND_EFFECT_HIGH_HAT)
+        if (activeSong == SONG_MODE_JOLENE)
         {
             AddToSongBonus(200);
         }

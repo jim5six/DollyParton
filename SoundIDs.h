@@ -40,7 +40,7 @@
 #define SOUND_EFFECT_SONG_MODE_CHANGED          306
 #define SOUND_EFFECT_SONG_MODE_COMPLETE         307
 
-// Background music
+// Background music (no lyrics) for unstructured play
 #define SOUND_EFFECT_BG_JOLENE                  400
 #define SOUND_EFFECT_BG_COAT_COLORS             401
 #define SOUND_EFFECT_BG_9TO5                    402

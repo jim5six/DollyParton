@@ -1992,7 +1992,7 @@ int InitNewBall(bool curStateChanged)
         if (CurrentBallInPlay == 2)
             songNum = SOUND_EFFECT_BG_COAT_COLORS;
         if (CurrentBallInPlay == 3)
-            songNum = SOUND_EFFECT_BG_JOLENE;
+            songNum = SOUND_EFFECT_BG_9TO5;
         if (Audio.GetBackgroundSong() != songNum)
         {
             PlayBackgroundSong(songNum);
