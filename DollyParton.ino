@@ -2320,8 +2320,6 @@ int CountdownBonus(boolean curStateChanged)
 
     const unsigned long countdownDelayTime = 130;
 
-    Display_OverrideScoreDisplay(GameplayManager::GetAdjacentDisplayIndex(CurrentPlayer), TotalBonus * 1000, 0);
-
     if ((CurrentTime - LastCountdownReportTime) > countdownDelayTime)
     {
         if (TotalBonus > 1)
@@ -2341,6 +2339,8 @@ int CountdownBonus(boolean curStateChanged)
         }
         LastCountdownReportTime = CurrentTime;
     }
+
+    Display_OverrideScoreDisplay(GameplayManager::GetAdjacentDisplayIndex(CurrentPlayer), TotalBonus * 1000, 0);
 
     if (Display_UpdateDisplays(0xFF, false, false, false))
     {
