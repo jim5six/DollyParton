@@ -31,6 +31,7 @@ void GameplayManager::StartBall(uint32_t currentTime, uint32_t playerUp)
     accumulatedSongBonus = 0;
     songBonusAwarding = false;
     nextSongBonusAwardTime = 0;
+    showNextSongDisplayEnd = 0;
 
     for (uint8_t i = 0; i < DOLLY_LETTERS_COUNT; i++)
     {
@@ -113,6 +114,11 @@ bool GameplayManager::ManageGameMode(uint32_t currentTime)
     }
     else
     {
+        if (currentTime < showNextSongDisplayEnd)
+        {
+            uint8_t songNum = static_cast<uint8_t>GetLitSongMode(currentPlayer);
+            Display_OverrideScoreDisplay(GetAdjacentDisplayIndex(currentPlayer), accumulatedSongBonus, 500 + songNum);
+        }
         // Not sure if I should be calling this all the time...but let's do it for now.
         Display_ClearOverride(GameplayManager::GetAdjacentDisplayIndex(CurrentPlayer));
     }
@@ -210,7 +216,11 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
     case SW_LOWER_L_TARGET:
         AddToCurrentScore(500);
         PlaySoundEffect(SOUND_EFFECT_POP_BASS);
-        playerProgress.CycleLitSongMode(currentPlayer);
+        if (!SongModeIsActve())
+        {
+            playerProgress.CycleLitSongMode(currentPlayer);
+            showNextSongDisplayEnd = currentTime + showSongDisplayTimeMs;
+        }
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
@@ -633,6 +643,8 @@ void GameplayManager::AdvanceSongBonusX()
 
 void GameplayManager::StartSongMode(uint32_t currentTime)
 {
+    showNextSongDisplayEnd = 0;
+    
     SetMode(GAME_MODE_SONG);
     activeSong = playerProgress.GetLitSongMode(currentPlayer);
 
