@@ -2,24 +2,121 @@
 #include "RPU.h"
 #include "DollyParton.h"
 #include "DisplayHandler.h"
+#include "AudioHandler.h"
+#include "PlayerProgress.h"
 #include "SoundIDs.h"
 #include "LampAnimationAPI.h"
 
-GameplayManager &GameplayManager::Instance(AudioHandler &audio)
+enum GameplayModuleMode
 {
-    static GameplayManager instance(audio);
-    return instance;
+    GAME_MODE_SKILL_SHOT,
+    GAME_MODE_UNSTRUCTURED_PLAY,
+    GAME_MODE_SONG
+};
+
+static const uint32_t BALL_SAVE_GRACE_PERIOD = 2000;
+static const uint32_t skillShotDurationMs = 10000;
+static const uint32_t songAwardCountdownInterval = 100;
+static const uint32_t songAwardScoreTick = 200;
+static const uint32_t showSongDisplayTimeMs = 4000;
+static const uint8_t maxSongBonusesAllowed = 3;
+
+static uint8_t currentPlayer = 0;
+static GameplayModuleMode currentMode = GAME_MODE_SKILL_SHOT;
+static uint32_t currentModeStartTime = 0;
+
+static SongMode activeSong = SONG_MODE_NONE;
+static uint32_t songMusicStartTime = 0;
+static uint32_t showNextSongDisplayEnd = 0;
+static uint32_t accumulatedSongBonus = 0;
+static uint8_t songBonusX = 1;
+static uint8_t songBonusesAwarded = 0;
+static bool songBonusAwarding = false;
+static uint32_t nextSongBonusAwardTime = 0;
+
+static uint32_t ballSaveDurationMs = 15000;
+static uint32_t ballSaveEndTime = 0;
+static uint8_t numberOfBallSavesAllowed = 0xFF;
+static uint8_t numberOfBallSavesRemaining = 0;
+static uint8_t playfieldMultiplier = 1;
+static bool samePlayerShootsAgain = false;
+static bool spinnerIsLit = false;
+
+static uint32_t lastSwitchHitTime = 0;
+static uint32_t ballFirstSwitchHitTime = 0;
+static bool ballDollyStandupProgress[DOLLY_LETTERS_COUNT] = {};
+static uint8_t ballBonusX = 1;
+
+static AudioHandler *audio = 0;
+
+static void SetMode(GameplayModuleMode newMode, uint32_t currentTime);
+static void ShowShootAgainLamp(uint32_t currentTime);
+static void ShowSpinnerLamp();
+static void ShowDollyTargetLamps();
+static void ShowDollyBonusLamps();
+static void LightPartonBonusLamps();
+static void ShowPartonBonusLamps();
+static void ShowBonusXLamps();
+static void AddToCurrentScore(uint32_t points, bool useMultiplier = true);
+static void AddToSongBonus(uint32_t points, bool useMultiplier = true);
+static void ValidateAndRegisterPlayfieldSwitch(uint32_t currentTime);
+static void PlaySound(unsigned short soundIndex);
+static void SpotDollyStandupLetter(DollyLetter letter);
+static void AdvanceBonusX();
+static void AdvanceSongBonusX();
+static void StartSongMode(uint32_t currentTime);
+static bool SongModeIsActive();
+
+
+/************************************************************** 
+* 
+*    Private (static) functions
+*
+*/
+
+void Gameplay_Initialize(AudioHandler &audioHandler)
+{
+    audio = &audioHandler;
 }
 
-GameplayManager::GameplayManager(AudioHandler &audioHandler)
-    : audio(audioHandler)
+static void SetMode(GameplayModuleMode newMode, uint32_t currentTime)
 {
+    currentMode = newMode;
+    currentModeStartTime = currentTime;
 }
 
-void GameplayManager::StartBall(uint32_t currentTime, uint32_t playerUp)
+static void PlaySound(unsigned short soundIndex)
+{
+    if (audio != 0)
+        audio->PlaySound(soundIndex, AUDIO_PLAY_TYPE_WAV_TRIGGER);
+}
+
+void Gameplay_GetCurrentPlayer(uint8_t playerNumber)
+{
+    currentPlayer = playerNumber;
+}
+
+void StartBallSave(uint32_t currentTime)
+{
+    ballSaveEndTime = currentTime + ballSaveDurationMs;
+    numberOfBallSavesRemaining = 1;
+}
+
+bool Gameplay_BallSaveIsActive(uint32_t currentTime)
+{
+    return ballSaveEndTime && currentTime < ballSaveEndTime + BALL_SAVE_GRACE_PERIOD;
+}
+
+void Gameplay_StartBallSave(uint32_t currentTime)
+{
+    ballSaveEndTime = currentTime + ballSaveDurationMs;
+    numberOfBallSavesRemaining = 1;
+}
+
+void Gameplay_StartBall(uint32_t currentTime, uint32_t playerUp)
 {
     currentPlayer = playerUp;
-    ballFirstSwitchHitTime = 0;
+        ballFirstSwitchHitTime = 0; // Reset the first switch hit time
     lastSwitchHitTime = 0;
     ballSaveEndTime = 0;
     SetMode(GAME_MODE_SKILL_SHOT, currentTime);
@@ -39,15 +136,15 @@ void GameplayManager::StartBall(uint32_t currentTime, uint32_t playerUp)
     }
 }
 
-void GameplayManager::EndBall(uint32_t currentTime)
+void Gameplay_EndBall(uint32_t currentTime)
 {
     // Do this just so we are sure to leave a song mode
     SetMode(GAME_MODE_UNSTRUCTURED_PLAY, currentTime);
-    audio.StopAllMusic();
+    audio->StopAllMusic();
 }
 
 // Get the index of the available display to the left or right.
-static byte GameplayManager::GetAdjacentDisplayIndex(byte currentPlayer)
+uint8_t Gameplay_GetAdjacentDisplayIndex(uint8_t currentPlayer)
 {
     if (currentPlayer == 0)
     {
@@ -69,9 +166,9 @@ static byte GameplayManager::GetAdjacentDisplayIndex(byte currentPlayer)
 
 // The main gameplay handler that should be called every cycle while in game mode. 
 // Returns TRUE if the ball is still in play
-bool GameplayManager::ManageGameMode(uint32_t currentTime)
+bool Gameplay_ManageGameMode(uint32_t currentTime)
 {
-    if (!BallSaveIsActive(currentTime))
+    if (!Gameplay_BallSaveIsActive(currentTime))
     {
         ballSaveEndTime = 0; //TODO: Can do this cleaner, but other code uses end time as 0 to show it's not active
     }
@@ -89,7 +186,7 @@ bool GameplayManager::ManageGameMode(uint32_t currentTime)
     {
         songMusicStartTime = 0;
         uint8_t songNum = static_cast<uint8_t>(activeSong);
-        audio.PlayBackgroundSong(SOUND_EFFECT_JOLENE + songNum);
+            audio->PlayBackgroundSong(SOUND_EFFECT_JOLENE + songNum);
     }
 
     // Trickle the song award bonus over to score if it's awarding
@@ -110,8 +207,8 @@ bool GameplayManager::ManageGameMode(uint32_t currentTime)
 
             if (songBonusesAwarded == maxSongBonusesAllowed)
             {
-                audio.StopAllMusic();
-                audio.QueuePrioritizedNotification(SOUND_EFFECT_SONG_MODE_COMPLETE, 0, 10, currentTime);
+                audio->StopAllMusic();
+                audio->QueuePrioritizedNotification(SOUND_EFFECT_SONG_MODE_COMPLETE, 0, 10, currentTime);
                 SetMode(GAME_MODE_UNSTRUCTURED_PLAY, currentTime);
                 activeSong = SONG_MODE_NONE;
             }
@@ -120,30 +217,30 @@ bool GameplayManager::ManageGameMode(uint32_t currentTime)
 
     if (SongModeIsActive())
     {
-        Display_OverrideScoreDisplay(GetAdjacentDisplayIndex(currentPlayer), accumulatedSongBonus, 0);
+        Display_OverrideScoreDisplay(Gameplay_GetAdjacentDisplayIndex(currentPlayer), accumulatedSongBonus, 0);
     }
     else
     {
         if (currentTime < showNextSongDisplayEnd)
         {
-            uint8_t songNum = static_cast<uint8_t>(playerProgress.GetLitSongMode(currentPlayer));
-            Display_OverrideScoreDisplay(GetAdjacentDisplayIndex(currentPlayer), accumulatedSongBonus, 500 + songNum);
+            uint8_t songNum = static_cast<uint8_t>(Player_GetLitSongMode(currentPlayer));
+            Display_OverrideScoreDisplay(Gameplay_GetAdjacentDisplayIndex(currentPlayer), accumulatedSongBonus, 500 + songNum);
         }
         // Not sure if I should be calling this all the time...but let's do it for now.
-        Display_ClearOverride(GameplayManager::GetAdjacentDisplayIndex(currentPlayer));
+            Display_ClearOverride(Gameplay_GetAdjacentDisplayIndex(currentPlayer));
     }
 
     return true;
 }
 
-void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTime)
+void Gameplay_HandleSwitches(uint8_t switchHit, uint32_t currentTime)
 {
     switch (switchHit)
     {
 
     case SW_T_POP_BUMPER:
         AddToCurrentScore(10);
-        PlaySoundEffect(SOUND_EFFECT_SNARE);
+        PlaySound(SOUND_EFFECT_SNARE);
         if (activeSong == SONG_MODE_JOLENE)
         {
             AddToSongBonus(200);
@@ -153,7 +250,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
 
     case SW_L_POP_BUMPER:
         AddToCurrentScore(20);
-        PlaySoundEffect(SOUND_EFFECT_BASS);
+        PlaySound(SOUND_EFFECT_BASS);
         if (activeSong == SOUND_EFFECT_BASS)
         {
             AddToSongBonus(200);
@@ -163,7 +260,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
 
     case SW_B_POP_BUMPER:
         AddToCurrentScore(30);
-        PlaySoundEffect(SOUND_EFFECT_HIGHHAT);
+        PlaySound(SOUND_EFFECT_HIGHHAT);
         if (activeSong == SONG_MODE_JOLENE)
         {
             AddToSongBonus(200);
@@ -180,7 +277,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             AddToCurrentScore(600);
         }
-        PlaySoundEffect(SOUND_EFFECT_LOW_E_STRING);
+        PlaySound(SOUND_EFFECT_LOW_E_STRING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
@@ -193,7 +290,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             AddToCurrentScore(600);
         }
-        PlaySoundEffect(SOUND_EFFECT_LOW_E_STRING);
+        PlaySound(SOUND_EFFECT_LOW_E_STRING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
@@ -206,7 +303,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             AddToCurrentScore(1000);
         }
-        PlaySoundEffect(SOUND_EFFECT_BASS);
+        PlaySound(SOUND_EFFECT_BASS);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
@@ -219,18 +316,18 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             AddToCurrentScore(1000);
         }
-        PlaySoundEffect(SOUND_EFFECT_BASS);
+        PlaySound(SOUND_EFFECT_BASS);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
     case SW_LOWER_L_TARGET:
         AddToCurrentScore(500);
-        PlaySoundEffect(SOUND_EFFECT_G_STRING);
+        PlaySound(SOUND_EFFECT_G_STRING);
         if (!SongModeIsActive())
         {
-            playerProgress.CycleLitSongMode(currentPlayer);
+            Player_CycleLitSongMode(currentPlayer);
             showNextSongDisplayEnd = currentTime + showSongDisplayTimeMs;
-            audio.QueuePrioritizedNotification(SOUND_EFFECT_SONG_MODE_CHANGED, 0, 10, currentTime);
+            audio->QueuePrioritizedNotification(SOUND_EFFECT_SONG_MODE_CHANGED, 0, 10, currentTime);
         }
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
@@ -244,27 +341,27 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         }
         else
         {
-            PlaySoundEffect(SOUND_EFFECT_HIGH_E_STRING);
+            PlaySound(SOUND_EFFECT_HIGH_E_STRING);
         }
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
     case SW_LEFT_SLING:
         AddToCurrentScore(100);
-        PlaySoundEffect(SOUND_EFFECT_A_STRING);
+        PlaySound(SOUND_EFFECT_A_STRING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
     case SW_RIGHT_SLING:
         AddToCurrentScore(100);
-        PlaySoundEffect(SOUND_EFFECT_B_STRING);
+        PlaySound(SOUND_EFFECT_B_STRING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
     case SW_DROP_1:
         AddToCurrentScore(500);
         spinnerIsLit = true;
-        PlaySoundEffect(SOUND_EFFECT_G_STRING);
+        PlaySound(SOUND_EFFECT_G_STRING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
@@ -272,7 +369,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         AdvanceBonusX();
         if (SongModeIsActive()) { AdvanceSongBonusX(); }
         AddToCurrentScore(500);
-        PlaySoundEffect(SOUND_EFFECT_A_STRING);
+        PlaySound(SOUND_EFFECT_A_STRING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
@@ -280,7 +377,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         AdvanceBonusX();
         if (SongModeIsActive()) { AdvanceSongBonusX(); }
         AddToCurrentScore(500);
-        PlaySoundEffect(SOUND_EFFECT_B_STRING);
+        PlaySound(SOUND_EFFECT_B_STRING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
@@ -288,13 +385,13 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         AdvanceBonusX();
         if (SongModeIsActive()) { AdvanceSongBonusX(); }
         AddToCurrentScore(500);
-        PlaySoundEffect(SOUND_EFFECT_HIGH_E_STRING);
+        PlaySound(SOUND_EFFECT_HIGH_E_STRING);
         ValidateAndRegisterPlayfieldSwitch(currentTime);
         break;
 
     case SW_SUPERSTAR:
         AddToCurrentScore(5000);
-        PlaySoundEffect(SOUND_EFFECT_SONG_MODE_START);
+        PlaySound(SOUND_EFFECT_SONG_MODE_START);
         RPU_PushToTimedSolenoidStack(SOL_DROP_BANK_RESET, 10, currentTime + 5000, true);
 
         if (!SongModeIsActive())
@@ -305,7 +402,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
 
     case SW_RUBBER:
         AddToCurrentScore(30);
-        PlaySoundEffect(SOUND_EFFECT_SNARE);
+        PlaySound(SOUND_EFFECT_SNARE);
         break;
 
     case SW_D:
@@ -317,7 +414,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             AddToCurrentScore(400);
         }
-        PlaySoundEffect(SOUND_EFFECT_LOW_E_STRING);
+        PlaySound(SOUND_EFFECT_LOW_E_STRING);
         SpotDollyStandupLetter(DOLLY_D);
 
         ValidateAndRegisterPlayfieldSwitch(currentTime);
@@ -332,7 +429,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             AddToCurrentScore(400);
         }
-        PlaySoundEffect(SOUND_EFFECT_G_STRING);
+        PlaySound(SOUND_EFFECT_G_STRING);
         SpotDollyStandupLetter(DOLLY_O);
 
         ValidateAndRegisterPlayfieldSwitch(currentTime);
@@ -347,7 +444,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             AddToCurrentScore(400);
         }
-        PlaySoundEffect(SOUND_EFFECT_A_STRING);
+        PlaySound(SOUND_EFFECT_A_STRING);
         SpotDollyStandupLetter(DOLLY_L1);
 
         ValidateAndRegisterPlayfieldSwitch(currentTime);
@@ -362,7 +459,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             AddToCurrentScore(400);
         }
-        PlaySoundEffect(SOUND_EFFECT_B_STRING);
+        PlaySound(SOUND_EFFECT_B_STRING);
         SpotDollyStandupLetter(DOLLY_L2);
 
         ValidateAndRegisterPlayfieldSwitch(currentTime);
@@ -377,7 +474,7 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         {
             AddToCurrentScore(400);
         }
-        PlaySoundEffect(SOUND_EFFECT_HIGH_E_STRING);
+        PlaySound(SOUND_EFFECT_HIGH_E_STRING);
         SpotDollyStandupLetter(DOLLY_Y);
 
         ValidateAndRegisterPlayfieldSwitch(currentTime);
@@ -387,12 +484,12 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         if (spinnerIsLit)
         {
             AddToCurrentScore(1000);
-            PlaySoundEffect(SOUND_EFFECT_HIGH_E_STRING);
+            PlaySound(SOUND_EFFECT_HIGH_E_STRING);
         }
         else
         {
             AddToCurrentScore(100);
-            PlaySoundEffect(SOUND_EFFECT_LOW_E_STRING);
+            PlaySound(SOUND_EFFECT_LOW_E_STRING);
         }
         if (activeSong == SONG_MODE_JOSHUA)
         {
@@ -406,14 +503,14 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
         if (currentMode != GAME_MODE_SKILL_SHOT)
         {
             AddToCurrentScore(1000);
-            PlaySoundEffect(SOUND_EFFECT_SNARE);
+            PlaySound(SOUND_EFFECT_SNARE);
             RPU_PushToTimedSolenoidStack(SOL_SAUCER, 10, currentTime + 1000, true);
             ValidateAndRegisterPlayfieldSwitch(currentTime);
         }
         else
         {
             AddToCurrentScore(1000);
-            PlaySoundEffect(SOUND_EFFECT_LOW_E_STRING);
+            PlaySound(SOUND_EFFECT_LOW_E_STRING);
             RPU_PushToTimedSolenoidStack(SOL_SAUCER, 10, currentTime + 1000, true);
             ValidateAndRegisterPlayfieldSwitch(currentTime);
             SetMode(GAME_MODE_UNSTRUCTURED_PLAY, currentTime);
@@ -421,34 +518,34 @@ void GameplayManager::HandleGameplaySwitches(byte switchHit, uint32_t currentTim
 
         if (RPU_ReadLampState(LAMP_P_SAUCER))
         {
-            playerProgress.SpotPartonLetter(currentPlayer, PARTON_P);
+            Player_SpotPartonLetter(currentPlayer, PARTON_P);
         }
         else if (RPU_ReadLampState(LAMP_A_SAUCER))
         {
-            playerProgress.SpotPartonLetter(currentPlayer, PARTON_A);
+            Player_SpotPartonLetter(currentPlayer, PARTON_A);
         }
         else if (RPU_ReadLampState(LAMP_R_SAUCER))
         {
-            playerProgress.SpotPartonLetter(currentPlayer, PARTON_R);
+            Player_SpotPartonLetter(currentPlayer, PARTON_R);
         }
         else if (RPU_ReadLampState(LAMP_T_SAUCER))
         {
-            playerProgress.SpotPartonLetter(currentPlayer, PARTON_T);
+            Player_SpotPartonLetter(currentPlayer, PARTON_T);
         }
         else if (RPU_ReadLampState(LAMP_O_SAUCER))
         {
-            playerProgress.SpotPartonLetter(currentPlayer, PARTON_O);
+            Player_SpotPartonLetter(currentPlayer, PARTON_O);
         }
         else if (RPU_ReadLampState(LAMP_N_SAUCER))
         {
-            playerProgress.SpotPartonLetter(currentPlayer, PARTON_N);
+            Player_SpotPartonLetter(currentPlayer, PARTON_N);
         }
 
         break;
     }
 }
 
-void GameplayManager::ShowGameplayLamps(uint32_t currentTime)
+void Gameplay_ShowLamps(uint32_t currentTime)
 {
     ShowShootAgainLamp(currentTime);
     ShowSpinnerLamp();
@@ -460,29 +557,35 @@ void GameplayManager::ShowGameplayLamps(uint32_t currentTime)
     ShowLampAnimation(2, 144, currentTime, 23, false, false);
 }
 
-void GameplayManager::ConfigureBallSave(uint32_t durationMs, uint8_t numberOfSaves = 0xFF)
+void Gameplay_ConfigureBallSave(uint32_t durationMs, uint8_t numberOfSaves)
 {
     ballSaveDurationMs = durationMs;
     numberOfBallSavesAllowed = numberOfSaves;
 }
 
-void GameplayManager::EndBallSave()
+void Gameplay_EndBallSave()
 {
     ballSaveEndTime = 0;
     numberOfBallSavesRemaining = 0;
 }
 
-bool GameplayManager::PlayfieldValidated()
+bool Gameplay_PlayfieldValidated()
 {
     return (ballFirstSwitchHitTime != 0);
 }
 
-uint8_t GameplayManager::GetActiveBonusX()
+uint8_t Gameplay_GetActiveBonusX()
 {
     return ballBonusX;
 }
 
-void GameplayManager::ShowShootAgainLamp(uint32_t currentTime)
+/************************************************************** 
+* 
+*    Private (static) functions
+*
+*/
+
+static void ShowShootAgainLamp(uint32_t currentTime)
 {       
     if ((ballFirstSwitchHitTime == 0 && ballSaveDurationMs) || (ballSaveEndTime && currentTime < ballSaveEndTime))
     {
@@ -497,12 +600,12 @@ void GameplayManager::ShowShootAgainLamp(uint32_t currentTime)
     }
 }
 
-void GameplayManager::ShowSpinnerLamp()
+static void ShowSpinnerLamp()
 {
     RPU_SetLampState(LAMP_SPINNER_1K, spinnerIsLit, 0, 0);
 }
 
-void GameplayManager::ShowDollyTargetLamps()
+static void ShowDollyTargetLamps()
 {
     for (uint8_t i = 0; i < DOLLY_LETTERS_COUNT; i++)
     {
@@ -510,15 +613,15 @@ void GameplayManager::ShowDollyTargetLamps()
     }
 }
 
-void GameplayManager::ShowDollyBonusLamps()
+static void ShowDollyBonusLamps()
 {
     for (uint8_t i = 0; i < DOLLY_LETTERS_COUNT; i++)
     {
-        RPU_SetLampState(LAMP_D_CENTER + i, playerProgress.IsDollyLetterSpotted(currentPlayer, static_cast<DollyLetter>(i)));
+        RPU_SetLampState(LAMP_D_CENTER + i, Player_IsDollyLetterSpotted(currentPlayer, static_cast<DollyLetter>(i)));
     }
 }
 
-void GameplayManager::ShowBonusXLamps()
+static void ShowBonusXLamps()
 {
     if (SongModeIsActive())
     {
@@ -534,11 +637,11 @@ void GameplayManager::ShowBonusXLamps()
     }
 }
 
-void GameplayManager::LightPartonBonusLamps()
+static void LightPartonBonusLamps()
 {
     if (RPU_ReadLampState(LAMP_P_SAUCER) && RPU_ReadLampState(LAMP_A_SAUCER) && RPU_ReadLampState(LAMP_R_SAUCER) && RPU_ReadLampState(LAMP_T_SAUCER) && RPU_ReadLampState(LAMP_O_SAUCER) && RPU_ReadLampState(LAMP_N_SAUCER))
     {
-        playerProgress.AddScore(currentPlayer, 50000);
+        Player_AddScore(currentPlayer, 50000);
     }
     else if (RPU_ReadLampState(LAMP_P_SAUCER))
     {
@@ -566,17 +669,17 @@ void GameplayManager::LightPartonBonusLamps()
     }
 }
 
-void GameplayManager::ShowPartonBonusLamps()
+static void ShowPartonBonusLamps()
 {
-    RPU_SetLampState(LAMP_P_CENTER, playerProgress.IsPartonLetterSpotted(currentPlayer, PARTON_P));
-    RPU_SetLampState(LAMP_A_CENTER, playerProgress.IsPartonLetterSpotted(currentPlayer, PARTON_A));
-    RPU_SetLampState(LAMP_R_CENTER, playerProgress.IsPartonLetterSpotted(currentPlayer, PARTON_R));
-    RPU_SetLampState(LAMP_T_CENTER, playerProgress.IsPartonLetterSpotted(currentPlayer, PARTON_T));
-    RPU_SetLampState(LAMP_PARTON_O_CENTER, playerProgress.IsPartonLetterSpotted(currentPlayer, PARTON_O));
-    RPU_SetLampState(LAMP_N_CENTER, playerProgress.IsPartonLetterSpotted(currentPlayer, PARTON_N));
+    RPU_SetLampState(LAMP_P_CENTER, Player_IsPartonLetterSpotted(currentPlayer, PARTON_P));
+    RPU_SetLampState(LAMP_A_CENTER, Player_IsPartonLetterSpotted(currentPlayer, PARTON_A));
+    RPU_SetLampState(LAMP_R_CENTER, Player_IsPartonLetterSpotted(currentPlayer, PARTON_R));
+    RPU_SetLampState(LAMP_T_CENTER, Player_IsPartonLetterSpotted(currentPlayer, PARTON_T));
+    RPU_SetLampState(LAMP_PARTON_O_CENTER, Player_IsPartonLetterSpotted(currentPlayer, PARTON_O));
+    RPU_SetLampState(LAMP_N_CENTER, Player_IsPartonLetterSpotted(currentPlayer, PARTON_N));
 }
 
-void GameplayManager::ValidateAndRegisterPlayfieldSwitch(uint32_t currentTime)
+static void ValidateAndRegisterPlayfieldSwitch(uint32_t currentTime)
 {
     lastSwitchHitTime = currentTime;
     if (ballFirstSwitchHitTime == 0)
@@ -586,19 +689,19 @@ void GameplayManager::ValidateAndRegisterPlayfieldSwitch(uint32_t currentTime)
     }
 }
 
-void GameplayManager::AddToCurrentScore(uint32_t points, bool useMultiplier)
+static void AddToCurrentScore(uint32_t points, bool useMultiplier)
 {
     uint32_t actualPoints = useMultiplier ? points * playfieldMultiplier : points;
-    playerProgress.AddScore(currentPlayer, actualPoints);
+    Player_AddScore(currentPlayer, actualPoints);
 }
 
-void GameplayManager::AddToSongBonus(uint32_t points, bool useMultiplier = true)
+static void AddToSongBonus(uint32_t points, bool useMultiplier)
 {
     uint32_t actualPoints = useMultiplier ? points * songBonusX : points;
     accumulatedSongBonus += actualPoints;
 }
 
-void GameplayManager::SpotDollyStandupLetter(DollyLetter letter)
+static void SpotDollyStandupLetter(DollyLetter letter)
 {
     ballDollyStandupProgress[letter] = true;
 
@@ -614,7 +717,7 @@ void GameplayManager::SpotDollyStandupLetter(DollyLetter letter)
     }
     if (allLettersLit)
     {
-        playerProgress.SpotNextDollyLetter(currentPlayer);
+        Player_SpotNextDollyLetter(currentPlayer);
 
         for (uint8_t i = 0; i < DOLLY_LETTERS_COUNT; i++)
         {
@@ -623,7 +726,7 @@ void GameplayManager::SpotDollyStandupLetter(DollyLetter letter)
     }
 }
 
-void GameplayManager::AdvanceBonusX()
+static void AdvanceBonusX()
 {
     if (ballBonusX == 1)
     {
@@ -639,7 +742,7 @@ void GameplayManager::AdvanceBonusX()
     }
 }
 
-void GameplayManager::AdvanceSongBonusX()
+static void AdvanceSongBonusX()
 {
     if (songBonusX == 1)
     {
@@ -655,19 +758,19 @@ void GameplayManager::AdvanceSongBonusX()
     }
 }
 
-void GameplayManager::StartSongMode(uint32_t currentTime)
+static void StartSongMode(uint32_t currentTime)
 {
     showNextSongDisplayEnd = 0;
 
     SetMode(GAME_MODE_SONG, currentTime);
-    activeSong = playerProgress.GetLitSongMode(currentPlayer);
+    activeSong = Player_GetLitSongMode(currentPlayer);
 
-    audio.QueuePrioritizedNotification(SOUND_EFFECT_SONG_MODE_START, 0, 10, currentTime);
+    audio->QueuePrioritizedNotification(SOUND_EFFECT_SONG_MODE_START, 0, 10, currentTime);
 
     songMusicStartTime = currentTime + 1500;
 }
 
-bool GameplayManager::SongModeIsActive()
+static bool SongModeIsActive()
 {
     return (activeSong != SONG_MODE_NONE && activeSong != SONG_MODE_COUNT);
 }

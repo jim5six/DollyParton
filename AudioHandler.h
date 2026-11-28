@@ -4,7 +4,6 @@
 #include "RPU_Config.h"
 #include "RPU.h"
 
-
 #define AUDIO_PLAY_TYPE_CHIMES            1
 #define AUDIO_PLAY_TYPE_ORIGINAL_SOUNDS   2
 #define AUDIO_PLAY_TYPE_WAV_TRIGGER       4

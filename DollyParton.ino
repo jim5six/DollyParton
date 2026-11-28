@@ -167,9 +167,6 @@ byte CPCSelection[3];
 AudioHandler Audio;
 OperatorMenus Menus;
 
-PlayerProgressManager &PlayerProgress = PlayerProgressManager::Instance();
-GameplayManager &GameManager = GameplayManager::Instance(Audio);
-
 #ifdef RPU_OS_USE_ACCESSORY_LAMP_BOARD
 AccessoryLampBoard TopperALB;
 #endif
@@ -306,7 +303,7 @@ boolean LoadRuleDefaults(byte ruleLevel)
         return false;
     }
 
-    GameManager.ConfigureBallSave(BallSaveNumSeconds * 1000);
+    Gameplay_ConfigureBallSave(BallSaveNumSeconds * 1000);
 
     return true;
 }
@@ -632,6 +629,7 @@ void setup()
     // Set up the Audio handler in order to play boot messages
     CurrentTime = millis();
     Audio.InitDevices(AUDIO_PLAY_TYPE_WAV_TRIGGER | AUDIO_PLAY_TYPE_ORIGINAL_SOUNDS);
+    Gameplay_Initialize(Audio);
     Audio.StopAllAudio();
     Audio.SetMusicDuckingGain(25);
     Audio.SetSoundFXDuckingGain(20);
@@ -1895,7 +1893,7 @@ int InitGamePlay(boolean curStateChanged)
 
     if (curStateChanged)
     {
-        PlayerProgress.ResetGame();
+        Player_ResetGame();
         RPU_TurnOffAllLamps();
         SetGeneralIlluminationOn(true);
         GameStartNotificationTime = CurrentTime;
@@ -1952,7 +1950,7 @@ int InitNewBall(bool curStateChanged)
     // then we have to do everything to set up the new ball
     if (curStateChanged)
     {
-        GameManager.StartBall(CurrentTime, CurrentPlayer);
+        Gameplay_StartBall(CurrentTime, CurrentPlayer);
 
         if (GameRulesSelection == GAME_RULES_PROGRESSIVE)
         {
@@ -2200,16 +2198,16 @@ int ManageGameMode()
         break;
     }
 
-    GameManager.ManageGameMode(CurrentTime);
+    Gameplay_ManageGameMode(CurrentTime);
 
     SyncScores();
 
     if (!statusRunning && !specialAnimationRunning && NumTiltWarnings <= MaxTiltWarnings)
     {
-        GameManager.ShowGameplayLamps(CurrentTime);
+        Gameplay_ShowLamps(CurrentTime);
     }
 
-    if (Display_UpdateDisplays(0xFF, false, GameManager.PlayfieldValidated() ? false : true, (GameManager.PlayfieldValidated() && ((CurrentTime - Display_GetLastTimeScoreChanged()) > 2000)) ? true : false))
+    if (Display_UpdateDisplays(0xFF, false, Gameplay_PlayfieldValidated() ? false : true, (Gameplay_PlayfieldValidated() && ((CurrentTime - Display_GetLastTimeScoreChanged()) > 2000)) ? true : false))
     {
         Audio.StopSound(SOUND_EFFECT_SCORE_TICK);
         PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
@@ -2233,7 +2231,7 @@ int ManageGameMode()
             if ((CurrentTime - BallTimeInTrough) > 750)
             {
 
-                if ((!GameManager.PlayfieldValidated() && NumTiltWarnings <= MaxTiltWarnings))
+                if ((!Gameplay_PlayfieldValidated() && NumTiltWarnings <= MaxTiltWarnings))
                 {
                     // Nothing hit yet, so return the ball to the player
                     RPU_PushToTimedSolenoidStack(SOL_BALL_TROUGH, BallServeSolenoidStrength, CurrentTime);
@@ -2243,7 +2241,7 @@ int ManageGameMode()
                 else
                 {
                     // if we haven't used the ball save, and we're under the time limit, then save the ball
-                    if (GameManager.BallSaveIsActive(CurrentTime))
+                    if (Gameplay_BallSaveIsActive(CurrentTime))
                     {
                         RPU_PushToTimedSolenoidStack(SOL_BALL_TROUGH, BallServeSolenoidStrength, CurrentTime + 100);
                         QueueNotification(SOUND_EFFECT_BALL_SAVE, 10);
@@ -2260,7 +2258,7 @@ int ManageGameMode()
                             Display_ClearOverride(0xFF);
                             Audio.StopAllAudio();
                             // PlaySoundEffect(SOUND_EFFECT_);
-                            GameManager.EndBall(CurrentTime);
+                            Gameplay_EndBall(CurrentTime);
                             returnState = MACHINE_STATE_COUNTDOWN_BONUS;
                         }
                     }
@@ -2308,7 +2306,7 @@ int CountdownBonus(boolean curStateChanged)
         // ShowBonusLamps();
         IncrementingBonusXCounter = 1;
     
-        TotalBonus = (PlayerProgress.GetBonus(CurrentPlayer)) * GameManager.GetActiveBonusX();
+        TotalBonus = (Player_GetBonus(CurrentPlayer)) * Gameplay_GetActiveBonusX();
 
         BonusCountDownEndTime = 0xFFFFFFFF;
         // Some sound cards have a special index
@@ -2328,7 +2326,7 @@ int CountdownBonus(boolean curStateChanged)
             // Only give sound & score if this isn't a tilt
             if (NumTiltWarnings <= MaxTiltWarnings)
             {
-                PlayerProgress.AddScore(CurrentPlayer, 1000);
+                Player_AddScore(CurrentPlayer, 1000);
             }
 
             TotalBonus -= 1;
@@ -2340,7 +2338,7 @@ int CountdownBonus(boolean curStateChanged)
         LastCountdownReportTime = CurrentTime;
     }
 
-    Display_OverrideScoreDisplay(GameplayManager::GetAdjacentDisplayIndex(CurrentPlayer), TotalBonus * 1000, 0);
+    Display_OverrideScoreDisplay(Gameplay_GetAdjacentDisplayIndex(CurrentPlayer), TotalBonus * 1000, 0);
 
     if (Display_UpdateDisplays(0xFF, false, false, false))
     {
@@ -2358,7 +2356,7 @@ int CountdownBonus(boolean curStateChanged)
         // Reset any lights & variables of goals that weren't completed
         BonusCountDownEndTime = 0xFFFFFFFF;
         RPU_EnableSolenoidStack();
-        Display_ClearOverride(GameplayManager::GetAdjacentDisplayIndex(CurrentPlayer));
+        Display_ClearOverride(Gameplay_GetAdjacentDisplayIndex(CurrentPlayer));
         return MACHINE_STATE_BALL_OVER;
     }
 
@@ -2711,7 +2709,7 @@ int HandleSystemSwitches(int curState, byte switchHit)
                     RPU_TurnOffAllLamps();
                     RPU_SetLampState(LAMP_TILT, 1);
                     Audio.StopAllAudio();
-                    GameManager.EndBallSave();
+                    Gameplay_EndBallSave();
                     PlaySoundEffect(SOUND_EFFECT_TILT);
                 }
                 else
@@ -2814,7 +2812,7 @@ int RunGamePlayMode(int curState, boolean curStateChanged)
     {
         returnState = HandleSystemSwitches(curState, switchHit);
         if (NumTiltWarnings <= MaxTiltWarnings)
-            GameManager.HandleGameplaySwitches(switchHit, CurrentTime);
+            Gameplay_HandleSwitches(switchHit, CurrentTime);
     }
 
     if (CreditResetPressStarted)
@@ -2894,7 +2892,7 @@ void SyncScores()
 {
     for (int count = 0; count < CurrentNumPlayers; count++)
     {
-        CurrentScores[count] = PlayerProgress.GetScore(count);
+        CurrentScores[count] = Player_GetScore(count);
     }
 }
 
