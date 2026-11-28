@@ -226,7 +226,7 @@ bool Gameplay_ManageGameMode(uint32_t currentTime)
         if (currentTime < showNextSongDisplayEnd)
         {
             uint8_t songNum = static_cast<uint8_t>(Player_GetLitSongMode(currentPlayer));
-            Display_OverrideScoreDisplay(Gameplay_GetAdjacentDisplayIndex(currentPlayer), accumulatedSongBonus, 500 + songNum);
+            Display_OverrideScoreDisplay(Gameplay_GetAdjacentDisplayIndex(currentPlayer), 500 + songNum, 0);
         }
         // Not sure if I should be calling this all the time...but let's do it for now.
         else

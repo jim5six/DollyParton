@@ -2276,20 +2276,16 @@ int ManageGameMode()
 unsigned long CountdownStartTime = 0;
 unsigned long LastCountdownReportTime = 0;
 unsigned long BonusCountDownEndTime = 0;
-byte DecrementingBonusCounter;
-byte IncrementingBonusXCounter;
+unsigned long CountdownDelayTime = 130;
 byte TotalBonus = 0;
 byte BonusRemaining = 0;
 
-int CountDownDelayTimes[] = {130, 130, 130, 100, 100, 60, 60, 60, 60, 60};
-
 int CountdownBonus(boolean curStateChanged)
 {
-
     // If this is the first time through the countdown loop
     if (curStateChanged)
     {
-
+        CountdownDelayTime = 1500; // hold to show the bonus first
         // Turn off solenoids
         RPU_DisableSolenoidStack();
 
@@ -2301,7 +2297,6 @@ int CountdownBonus(boolean curStateChanged)
         CountdownStartTime = CurrentTime;
         LastCountdownReportTime = CurrentTime;
         // ShowBonusLamps();
-        IncrementingBonusXCounter = 1;
     
         TotalBonus = (Player_GetBonus(CurrentPlayer)) * Gameplay_GetActiveBonusX();
 
@@ -2313,22 +2308,23 @@ int CountdownBonus(boolean curStateChanged)
         //    PlaySoundEffect(SOUND_EFFECT_STOP_BACKGROUND);
     }
 
-    const unsigned long countdownDelayTime = 130;
-
-    if ((CurrentTime - LastCountdownReportTime) > countdownDelayTime)
+    if (TotalBonus != 0 && (CurrentTime - LastCountdownReportTime) > CountdownDelayTime)
     {
-        if (TotalBonus > 1)
+        CountdownDelayTime = 130; //speed up countdown
+
+        if (TotalBonus > 0)
         {
 
             // Only give sound & score if this isn't a tilt
             if (NumTiltWarnings <= MaxTiltWarnings)
             {
                 Player_AddScore(CurrentPlayer, 1000);
+                SyncScores();
             }
 
             TotalBonus -= 1;
         }
-        else if (BonusCountDownEndTime == 0xFFFFFFFF)
+        if (TotalBonus == 0 && BonusCountDownEndTime == 0xFFFFFFFF)
         {
             BonusCountDownEndTime = CurrentTime + 1000;
         }
@@ -2336,12 +2332,7 @@ int CountdownBonus(boolean curStateChanged)
     }
 
     Display_OverrideScoreDisplay(Gameplay_GetAdjacentDisplayIndex(CurrentPlayer), TotalBonus * 1000, 0);
-
-    if (Display_UpdateDisplays(0xFF, false, false, false))
-    {
-        Audio.StopSound(SOUND_EFFECT_SCORE_TICK);
-        PlaySoundEffect(SOUND_EFFECT_SCORE_TICK);
-    }
+    Display_UpdateDisplays(0xFF, false, false, false);
 
     if (CurrentTime > BonusCountDownEndTime)
     {
