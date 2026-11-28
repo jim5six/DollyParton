@@ -49,7 +49,7 @@
 
 #define LAMP_BALL_IN_PLAY             48
 #define LAMP_HSTD                     49  //  JIM - NEED TO VERIFY
-#define LAMP_GANE_OVER                50
+#define LAMP_GAME_OVER                50
 #define LAMP_TILT                     51
 
 //Switch Definitions

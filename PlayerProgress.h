@@ -10,11 +10,11 @@
 
 enum SongMode
 {
-    SONG_MODE_JOLENE = 0,
-    SONG_MODE_COAT_OF_MANY_COLORS,
-    SONG_MODE_JOSHUA,
-    SONG_MODE_ISLANDS,
-    SONG_MODE_DUMB_BLONDE,
+    SONG_MODE_JOLENE = 0,           // Pops
+    SONG_MODE_COAT_OF_MANY_COLORS,  // Saucer
+    SONG_MODE_JOSHUA,               // Spinner
+    SONG_MODE_ISLANDS,              // Inlines
+    SONG_MODE_DUMB_BLONDE,          // Standups
     SONG_MODE_COUNT,
     SONG_MODE_NONE,
 };

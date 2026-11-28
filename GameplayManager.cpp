@@ -52,6 +52,7 @@ static AudioHandler *audio = 0;
 static void SetMode(GameplayModuleMode newMode, uint32_t currentTime);
 static void ShowShootAgainLamp(uint32_t currentTime);
 static void ShowSpinnerLamp();
+static void ShowSaucerLamps(uint32_t currentTime);
 static void ShowDollyTargetLamps();
 static void ShowDollyBonusLamps();
 static void LightPartonBonusLamps();
@@ -186,7 +187,7 @@ bool Gameplay_ManageGameMode(uint32_t currentTime)
     {
         songMusicStartTime = 0;
         uint8_t songNum = static_cast<uint8_t>(activeSong);
-            audio->PlayBackgroundSong(SOUND_EFFECT_JOLENE + songNum);
+        audio->PlayBackgroundSong(SOUND_EFFECT_JOLENE + songNum);
     }
 
     // Trickle the song award bonus over to score if it's awarding
@@ -208,6 +209,7 @@ bool Gameplay_ManageGameMode(uint32_t currentTime)
             if (songBonusesAwarded == maxSongBonusesAllowed)
             {
                 audio->StopAllMusic();
+                // TODO: Play a new background song
                 audio->QueuePrioritizedNotification(SOUND_EFFECT_SONG_MODE_COMPLETE, 0, 10, currentTime);
                 SetMode(GAME_MODE_UNSTRUCTURED_PLAY, currentTime);
                 activeSong = SONG_MODE_NONE;
@@ -227,7 +229,10 @@ bool Gameplay_ManageGameMode(uint32_t currentTime)
             Display_OverrideScoreDisplay(Gameplay_GetAdjacentDisplayIndex(currentPlayer), accumulatedSongBonus, 500 + songNum);
         }
         // Not sure if I should be calling this all the time...but let's do it for now.
+        else
+        {
             Display_ClearOverride(Gameplay_GetAdjacentDisplayIndex(currentPlayer));
+        }
     }
 
     return true;
@@ -500,20 +505,23 @@ void Gameplay_HandleSwitches(uint8_t switchHit, uint32_t currentTime)
         break;
         
     case SW_SAUCER:
+        if (activeSong == SONG_MODE_COAT_OF_MANY_COLORS)
+        {
+            AddToSongBonus(3000);
+            PlaySound(SOUND_EFFECT_LOW_E_STRING);
+            RPU_PushToTimedSolenoidStack(SOL_SAUCER, 10, currentTime + 1000, true);
+        }
         if (currentMode != GAME_MODE_SKILL_SHOT)
         {
             AddToCurrentScore(1000);
             PlaySound(SOUND_EFFECT_SNARE);
             RPU_PushToTimedSolenoidStack(SOL_SAUCER, 10, currentTime + 1000, true);
-            ValidateAndRegisterPlayfieldSwitch(currentTime);
         }
         else
         {
             AddToCurrentScore(1000);
             PlaySound(SOUND_EFFECT_LOW_E_STRING);
             RPU_PushToTimedSolenoidStack(SOL_SAUCER, 10, currentTime + 1000, true);
-            ValidateAndRegisterPlayfieldSwitch(currentTime);
-            SetMode(GAME_MODE_UNSTRUCTURED_PLAY, currentTime);
         }
 
         if (RPU_ReadLampState(LAMP_P_SAUCER))
@@ -541,6 +549,8 @@ void Gameplay_HandleSwitches(uint8_t switchHit, uint32_t currentTime)
             Player_SpotPartonLetter(currentPlayer, PARTON_N);
         }
 
+        ValidateAndRegisterPlayfieldSwitch(currentTime);
+
         break;
     }
 }
@@ -548,6 +558,7 @@ void Gameplay_HandleSwitches(uint8_t switchHit, uint32_t currentTime)
 void Gameplay_ShowLamps(uint32_t currentTime)
 {
     ShowShootAgainLamp(currentTime);
+    ShowSaucerLamps(currentTime);
     ShowSpinnerLamp();
     ShowDollyTargetLamps();
     ShowDollyBonusLamps();
@@ -602,7 +613,31 @@ static void ShowShootAgainLamp(uint32_t currentTime)
 
 static void ShowSpinnerLamp()
 {
-    RPU_SetLampState(LAMP_SPINNER_1K, spinnerIsLit, 0, 0);
+    if (activeSong == SONG_MODE_JOSHUA)
+    {
+        RPU_SetLampState(LAMP_SPINNER_1K, 1, 0, 250);
+    }
+    else
+    {
+        RPU_SetLampState(LAMP_SPINNER_1K, spinnerIsLit, 0, 0);
+    }
+}
+
+static void ShowSaucerLamps(uint32_t currentTime)
+{
+    if (activeSong == SONG_MODE_COAT_OF_MANY_COLORS)
+    {
+        RPU_SetLampState(LAMP_P_SAUCER, 1, 0, 250);
+        RPU_SetLampState(LAMP_A_SAUCER, 1, 0, 250);
+        RPU_SetLampState(LAMP_R_SAUCER, 1, 0, 250);
+        RPU_SetLampState(LAMP_T_SAUCER, 1, 0, 250);
+        RPU_SetLampState(LAMP_O_SAUCER, 1, 0, 250);
+        RPU_SetLampState(LAMP_N_SAUCER, 1, 0, 250);
+    }
+    else
+    {
+        ShowLampAnimation(2, 144, currentTime, 23, false, false);
+    }
 }
 
 static void ShowDollyTargetLamps()

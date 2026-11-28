@@ -2089,8 +2089,6 @@ int ManageGameMode()
             SetGeneralIlluminationOn(true);
         }
 
-        ShowLampAnimation(2, 144, CurrentTime, 23, false, false);
-
         // The switch handler will award the skill shot
         // (when applicable) and this mode will move
         // to unstructured play when any valid switch is
@@ -2165,7 +2163,6 @@ int ManageGameMode()
 
         if (BallFirstSwitchHitTime != 0)
         {
-            Display_ClearOverride(0xFF);
             SetGameMode(GAME_MODE_UNSTRUCTURED_PLAY);
         }
         break;
