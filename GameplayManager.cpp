@@ -85,6 +85,13 @@ bool GameplayManager::ManageGameMode(uint32_t currentTime)
         }
     }
 
+    if (songMusicStartTime && activeSong != SONG_MODE_NONE && currentTime > songMusicStartTime)
+    {
+        songMusicStartTime = 0;
+        uint8_t songNum = static_cast<uint8_t>(activeSong);
+        audio.PlayBackgroundSong(SOUND_EFFECT_JOLENE + songNum);
+    }
+
     // Trickle the song award bonus over to score if it's awarding
     if (songBonusAwarding && nextSongBonusAwardTime && currentTime >= nextSongBonusAwardTime && accumulatedSongBonus > 0)
     {
@@ -103,6 +110,7 @@ bool GameplayManager::ManageGameMode(uint32_t currentTime)
 
             if (songBonusesAwarded == maxSongBonusesAllowed)
             {
+                audio.StopAllMusic();
                 audio.QueuePrioritizedNotification(SOUND_EFFECT_SONG_MODE_COMPLETE, 0, 10, currentTime);
                 SetMode(GAME_MODE_UNSTRUCTURED_PLAY, currentTime);
                 activeSong = SONG_MODE_NONE;
@@ -656,8 +664,7 @@ void GameplayManager::StartSongMode(uint32_t currentTime)
 
     audio.QueuePrioritizedNotification(SOUND_EFFECT_SONG_MODE_START, 0, 10, currentTime);
 
-    uint8_t songNum = static_cast<uint8_t>(activeSong);
-    audio.PlayBackgroundSong(SOUND_EFFECT_JOLENE + songNum);
+    songMusicStartTime = currentTime + 1500;
 }
 
 bool GameplayManager::SongModeIsActive()

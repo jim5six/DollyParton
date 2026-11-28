@@ -46,6 +46,7 @@ private:
     uint32_t currentModeStartTime;          // The time when the current game mode started
 
     SongMode activeSong = SONG_MODE_NONE;
+    uint32_t songMusicStartTime = 0;
     uint32_t showNextSongDisplayEnd = 0;
     const uint32_t showSongDisplayTimeMs = 4000;
     uint32_t accumulatedSongBonus = 0;
